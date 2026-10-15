@@ -7,12 +7,6 @@
       "color": "#F0645A"
     },
     {
-      "id": "hmv9z76noazqh",
-      "name": "Running",
-      "createdAt": "2026-10-16",
-      "color": "#F59E42"
-    },
-    {
       "id": "hmv9zwpimuz9o",
       "name": "Cardio activity",
       "color": "#E8C547",
@@ -20,7 +14,6 @@
     }
   ],
   "checks": {
-    "hmv9z6traubln": {},
-    "hmv9z76noazqh": {}
+    "hmv9z6traubln": {}
   }
 }
