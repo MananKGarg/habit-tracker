@@ -1,4 +1,10 @@
 {
-  "habits": [],
+  "habits": [
+    {
+      "id": "hmv9z6traubln",
+      "name": "Wake up at 6AM",
+      "createdAt": "2026-10-16"
+    }
+  ],
   "checks": {}
 }
