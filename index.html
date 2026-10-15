@@ -116,6 +116,8 @@
   .cell:active{transform:scale(.9)}
   .cell.done{background:var(--hc);border-color:var(--hc)}
   .cell svg{width:16px;height:16px}
+  .cell.future{cursor:default;background:transparent;border:1.5px dashed var(--line)}
+  .cell.future:hover{background:transparent}
   .cell.pop{animation:pop .35s ease}
   @keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
   .streak{padding:0 8px 0 12px}
@@ -134,6 +136,7 @@
   /* Colour picker */
   .picker{position:absolute;z-index:50;background:var(--surface);border:1px solid var(--line);border-radius:14px;
           box-shadow:0 12px 32px rgba(0,0,0,.18);padding:12px;display:grid;grid-template-columns:repeat(5,28px);gap:10px}
+  .picker[hidden]{display:none}
   .picker button{width:28px;height:28px;border-radius:50%;border:0;padding:0;background:var(--c);cursor:pointer;transition:transform .12s}
   .picker button:hover{transform:scale(1.12)}
   .picker button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--c)}
@@ -264,6 +267,8 @@ const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const today = () => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; };
+// How many days ahead you can look: up to the same date next month
+const maxAhead = () => { const t = today(), m = new Date(t); m.setMonth(m.getMonth() + 1); return Math.round((m - t) / 864e5); };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 
 // Dark tick on light colours (e.g. yellow), white tick otherwise
@@ -407,10 +412,10 @@ function renderStats(days) {
   const t = ymd(today());
   const hs = state.habits;
   const doneToday = hs.filter(h => state.checks[h.id]?.[t]).length;
-  const keys = days.map(ymd);
+  const keys = days.map(ymd).filter(k => k <= t); // only days that have happened
   let ticks = 0;
   hs.forEach(h => keys.forEach(k => { if (state.checks[h.id]?.[k]) ticks++; }));
-  const pct = hs.length ? Math.round(ticks / (hs.length * 14) * 100) : 0;
+  const pct = hs.length && keys.length ? Math.round(ticks / (hs.length * keys.length) * 100) : 0;
   let best = null;
   hs.forEach(h => { const s = streak(h.id); if (!best || s > best.s) best = { s, name: h.name, color: h.color }; });
 
@@ -425,8 +430,8 @@ function renderStats(days) {
       <div class="segbar">${segs}</div>
     </div>
     <div class="stat">
-      <div class="label">These 14 days</div>
-      <div class="value">${pct}%<small>completed</small></div>
+      <div class="label">${keys.length ? `Last ${keys.length} day${keys.length === 1 ? '' : 's'} shown` : 'Upcoming days'}</div>
+      <div class="value">${keys.length ? `${pct}%<small>completed</small>` : '—<small>nothing to tick yet</small>'}</div>
       <div class="bar"><i style="width:${pct}%"></i></div>
     </div>
     <div class="stat">
@@ -444,7 +449,7 @@ function render() {
 
   $('todayLabel').textContent = today().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
   $('range').textContent = `${short(days[0])} – ${short(days[13])}`;
-  $('next').disabled = endOffset === 0;
+  $('next').disabled = endOffset <= -maxAhead();
   $('todayBtn').disabled = endOffset === 0;
   renderStats(days);
 
@@ -473,6 +478,10 @@ function render() {
       </div></td>`;
     days.forEach((d, i) => {
       const key = ymd(d), done = !!c[key];
+      if (key > t) { // future day: visible but not tickable
+        html += `<td class="${colCls(d, i)}"><span class="cell future" aria-hidden="true"></span></td>`;
+        return;
+      }
       const pop = popKey === `${h.id}|${key}` ? ' pop' : '';
       html += `<td class="${colCls(d, i)}"><button class="cell${done ? ' done' : ''}${pop}" data-id="${h.id}" data-day="${key}" aria-pressed="${done}" aria-label="${esc(h.name)} on ${key}">${done ? CHECK : ''}</button></td>`;
     });
@@ -565,7 +574,7 @@ $('grid').addEventListener('click', e => {
 });
 
 $('prev').onclick = () => { endOffset += 14; closePicker(); render(); };
-$('next').onclick = () => { endOffset = Math.max(0, endOffset - 14); closePicker(); render(); };
+$('next').onclick = () => { endOffset = Math.max(-maxAhead(), endOffset - 14); closePicker(); render(); };
 $('todayBtn').onclick = () => { endOffset = 0; closePicker(); render(); };
 $('status').onclick = () => { if (cfg.token && !saving) pull(); else if (!cfg.token) openSettings(); };
 
