@@ -29,6 +29,12 @@
       "name": "Healthy eating",
       "color": "#2BB3A3",
       "createdAt": "2026-10-16"
+    },
+    {
+      "id": "hmv9zzzb87hlz",
+      "name": "Paper read",
+      "color": "#4AA3F0",
+      "createdAt": "2026-10-16"
     }
   ],
   "checks": {
