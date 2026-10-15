@@ -3,12 +3,14 @@
     {
       "id": "hmv9z6traubln",
       "name": "Wake up at 6AM",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "color": "#F0645A"
     },
     {
       "id": "hmv9z76noazqh",
       "name": "Running",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "color": "#F59E42"
     }
   ],
   "checks": {
@@ -16,9 +18,7 @@
       "2026-10-03": true
     },
     "hmv9z76noazqh": {
-      "2026-10-06": true,
-      "2026-10-09": true,
-      "2026-10-12": true
+      "2026-10-09": true
     }
   }
 }
