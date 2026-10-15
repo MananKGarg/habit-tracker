@@ -23,6 +23,12 @@
       "name": "10k steps",
       "color": "#7BC96F",
       "createdAt": "2026-10-16"
+    },
+    {
+      "id": "hmv9zxzcvrkqd",
+      "name": "Healthy eating",
+      "color": "#2BB3A3",
+      "createdAt": "2026-10-16"
     }
   ],
   "checks": {
