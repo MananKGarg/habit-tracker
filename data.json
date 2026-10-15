@@ -17,6 +17,12 @@
       "name": "Gym",
       "color": "#F59E42",
       "createdAt": "2026-10-16"
+    },
+    {
+      "id": "hmv9zxpm356gz",
+      "name": "10k steps",
+      "color": "#7BC96F",
+      "createdAt": "2026-10-16"
     }
   ],
   "checks": {
