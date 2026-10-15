@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow — 14-Day GitHub Repo-Synced Habit Tracker</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.45);
+        }
+
+        @keyframes checkPop {
+            0% { transform: scale(0.8); }
+            50% { transform: scale(1.16); }
+            100% { transform: scale(1); }
+        }
+        .animate-check {
+            animation: checkPop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes pulseFlame {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.12) rotate(4deg); }
+        }
+        .flame-active {
+            animation: pulseFlame 2s infinite ease-in-out;
+        }
+
+        .bar-transition {
+            transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-[#0d1117] text-slate-900 dark:text-slate-100 font-sans min-h-screen transition-colors duration-200 selection:bg-brand-500 selection:text-white pb-16">
+
+    <!-- GitHub Repo & Cloud Sync Top Bar -->
+    <div class="bg-slate-900 dark:bg-[#161b22] text-slate-200 border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-2 text-xs">
+        <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 flex-wrap">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-slate-800 border border-slate-700 font-mono text-[11px] text-slate-300">
+                    <span id="disk-status-dot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span id="disk-status-text">Initializing sync...</span>
+                </div>
+                <span id="last-saved-time" class="text-[11px] text-slate-400 font-mono"></span>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="openGitHubConfigModal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold transition-all cursor-pointer shadow-sm">
+                    <i data-lucide="github" class="w-3.5 h-3.5"></i>
+                    <span id="gh-btn-label">Connect GitHub Repo Sync</span>
+                </button>
+                <button onclick="syncFromGitHubNow()" id="gh-pull-btn" title="Pull latest habits-data.json from GitHub" class="hidden items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition-all cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>Pull Latest</span>
+                </button>
+                <button onclick="openRepoGuideModal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium transition-all cursor-pointer">
+                    <i data-lucide="file-code" class="w-3.5 h-3.5 text-brand-400"></i>
+                    <span>JSON Inspector</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation & 14-Day Window Bar -->
+    <header class="sticky top-0 z-30 backdrop-blur-md bg-white/85 dark:bg-[#0d1117]/85 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <!-- Brand & Title -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white">
+                        <i data-lucide="calendar-range" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="text-lg font-bold tracking-tight">HabitFlow</h1>
+                            <span class="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">14-Day Matrix</span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">GitHub Pages + Live <code class="font-mono">habits-data.json</code> Repo Sync</p>
+                    </div>
+                </div>
+
+                <!-- Mobile Quick New Habit + Theme -->
+                <div class="flex items-center gap-2 lg:hidden">
+                    <button onclick="openHabitModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-600 text-white text-xs font-semibold">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add Habit
+                    </button>
+                    <button onclick="toggleTheme()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                        <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 14-Day History Scroll & Date Jumper -->
+            <div class="flex flex-wrap items-center justify-between sm:justify-center gap-1.5 bg-slate-100 dark:bg-[#161b22] p-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                <button onclick="shiftWindow(-14)" title="Back 2 Weeks (-14 days)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                    <i data-lucide="chevrons-left" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">2 Wks</span>
+                </button>
+                <button onclick="shiftWindow(-7)" title="Back 1 Week (-7 days)"
+                    class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                    <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>
+                    <span class="hidden md:inline">1 Wk</span>
+                </button>
+
+                <!-- Active 14-Day Date Range Display -->
+                <div class="px-3 py-1 text-center min-w-[195px]">
+                    <div id="window-date-range" class="text-xs font-bold tracking-tight text-slate-800 dark:text-slate-100 font-mono">Loading 14 days...</div>
+                    <div id="window-subtitle" class="text-[10px] text-slate-500 dark:text-slate-400">Current 2-Week Window</div>
+                </div>
+
+                <button onclick="shiftWindow(7)" title="Forward 1 Week (+7 days)"
+                    class="inline-flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                    <span class="hidden md:inline">1 Wk</span>
+                    <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="shiftWindow(14)" title="Forward 2 Weeks (+14 days)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                    <span class="hidden sm:inline">2 Wks</span>
+                    <i data-lucide="chevrons-right" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <button id="jump-today-btn" onclick="resetToCurrentWindow()"
+                    class="hidden px-2.5 py-1.5 rounded-lg text-xs font-bold bg-brand-600 text-white hover:bg-brand-500 transition-colors cursor-pointer">
+                    Today
+                </button>
+
+                <!-- Jump to Any Historical Date -->
+                <div class="relative flex items-center pl-1 border-l border-slate-200 dark:border-slate-700">
+                    <input type="date" id="jump-date-picker" onchange="jumpToDate(this.value)" title="Jump to any historical date"
+                        class="text-xs font-mono bg-transparent text-slate-600 dark:text-slate-300 px-1.5 py-1 rounded focus:outline-none cursor-pointer">
+                </div>
+            </div>
+
+            <!-- Right Desktop Controls -->
+            <div class="hidden lg:flex items-center gap-2">
+                <button onclick="openHabitModal()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-95 text-white font-semibold text-xs shadow-md shadow-brand-600/20 transition-all cursor-pointer">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>New Habit</span>
+                </button>
+
+                <button onclick="exportJSONFile()" title="Download habits-data.json" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors cursor-pointer">
+                    <i data-lucide="download" class="w-3.5 h-3.5 text-brand-500"></i>
+                    <span>Export</span>
+                </button>
+
+                <button onclick="toggleTheme()" title="Toggle Light/Dark Mode" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 transition-colors cursor-pointer">
+                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-4 h-4 block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
+
+        <!-- 4 KPI Cards (14-Day Window & All-Time Streak Metrics) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- KPI 1: 14-Day Completion Score -->
+            <div class="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">14-Day Window Score</p>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <h2 id="stat-14d-rate" class="text-3xl font-extrabold font-mono">0%</h2>
+                        <span id="stat-14d-fraction" class="text-xs text-slate-500 dark:text-slate-400 font-mono">0/0</span>
+                    </div>
+                    <p id="stat-14d-message" class="text-xs text-emerald-600 dark:text-emerald-400 mt-2 font-medium">
+                        Tracking 2-week consistency
+                    </p>
+                </div>
+                <div class="relative w-14 h-14 flex items-center justify-center shrink-0">
+                    <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                        <path class="text-slate-100 dark:text-slate-800" stroke-width="3.8" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path id="stat-ring-circle" class="text-brand-500 transition-all duration-700 ease-out" stroke-dasharray="0, 100" stroke-width="3.8" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <i data-lucide="activity" class="w-5 h-5 text-brand-500 absolute"></i>
+                </div>
+            </div>
+
+            <!-- KPI 2: Top Active Streak (All-Time History) -->
+            <div class="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Longest Active Streak</p>
+                    <div class="flex items-baseline gap-1.5 mt-1">
+                        <h2 id="stat-best-streak" class="text-3xl font-extrabold text-amber-500 font-mono">0</h2>
+                        <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">consecutive days</span>
+                    </div>
+                    <p id="stat-best-habit" class="text-xs text-slate-500 dark:text-slate-400 mt-2 truncate max-w-[190px]">Across full local history</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shrink-0">
+                    <i data-lucide="flame" class="w-6 h-6 flame-active"></i>
+                </div>
+            </div>
+
+            <!-- KPI 3: Today's Completion -->
+            <div class="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Today (<span id="stat-today-label">Today</span>)</p>
+                    <div class="flex items-baseline gap-2 mt-1">
+                        <h2 id="stat-today-count" class="text-3xl font-extrabold font-mono">0/0</h2>
+                        <span id="stat-today-percent" class="text-xs font-mono font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500">0%</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Daily check-ins logged</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 shrink-0">
+                    <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <!-- KPI 4: Perfect Days in 14-Day Window -->
+            <div class="bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Perfect Days (2 Wks)</p>
+                    <div class="flex items-baseline gap-1.5 mt-1">
+                        <h2 id="stat-perfect-days" class="text-3xl font-extrabold text-purple-500 font-mono">0</h2>
+                        <span class="text-xs font-mono font-medium text-slate-500 dark:text-slate-400">/ 14 days</span>
+                    </div>
+                    <p id="stat-total-historical" class="text-xs text-slate-500 dark:text-slate-400 mt-2">0 total historical logs</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-500 shrink-0">
+                    <i data-lucide="award" class="w-6 h-6"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Full-Width 14-Day (2-Week) Interactive Habit Matrix -->
+        <section class="bg-white dark:bg-[#161b22] rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+            <!-- Matrix Toolbar: Filters & Quick Actions -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <h2 class="text-base font-bold flex items-center gap-2">
+                        <i data-lucide="grid" class="w-5 h-5 text-brand-500"></i>
+                        14-Day Habit Check-In Matrix
+                    </h2>
+                    <!-- Category Filters -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto py-0.5" id="category-filters"></div>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="markAllToday()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold transition-colors cursor-pointer">
+                        <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                        <span>Check All Today</span>
+                    </button>
+                    <button onclick="openHabitModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-500/10 hover:bg-brand-500/20 text-brand-600 dark:text-brand-400 border border-brand-500/20 text-xs font-semibold transition-colors cursor-pointer">
+                        <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                        <span>Add Habit</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 14-Day Scrollable Grid Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[1060px]">
+                    <thead>
+                        <!-- Top Week Grouping Banner (Week 1 vs Week 2) -->
+                        <tr id="table-week-banner" class="border-b border-slate-200/70 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-900/60 text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        </tr>
+                        <!-- 14 Individual Day Columns -->
+                        <tr id="table-header-row" class="border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-[#0d1117]/60 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        </tr>
+                    </thead>
+                    <tbody id="habit-rows-container" class="divide-y divide-slate-200/70 dark:divide-slate-800/70 text-sm">
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden py-14 px-4 text-center">
+                <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 mx-auto flex items-center justify-center text-slate-400 mb-3">
+                    <i data-lucide="list-plus" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-sm font-bold">No habits in this view</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">Add a new habit or switch your category filter to start logging your 14-day progress.</p>
+                <div class="mt-4 flex items-center justify-center gap-2">
+                    <button onclick="openHabitModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-500">
+                        <i data-lucide="plus" class="w-4 h-4"></i> Add New Habit
+                    </button>
+                    <button onclick="loadStarterHabits()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800">
+                        Load Sample Habits
+                    </button>
+                </div>
+            </div>
+
+            <!-- Matrix Footer -->
+            <div class="px-5 py-3 bg-slate-50/70 dark:bg-[#0d1117]/50 border-t border-slate-200/80 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <div class="flex items-center gap-4 flex-wrap">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-brand-500 inline-block"></span>
+                        Today is highlighted
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                        Hover any habit row to edit, reorder, or delete
+                    </span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openClearConfirmModal()" class="text-slate-500 hover:text-rose-500 transition-colors cursor-pointer font-medium">
+                        Clear Visible 14 Days
+                    </button>
+                    <span>•</span>
+                    <button onclick="loadStarterHabits()" class="text-slate-500 hover:text-brand-500 transition-colors cursor-pointer">
+                        Reset Sample Data
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Analytics Grid: 14-Day Trend Chart (8 Cols) & Streak Leaderboard (4 Cols) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- 14-Day Daily Completion Bar Chart -->
+            <section class="lg:col-span-8 bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <div>
+                        <h3 class="text-base font-bold flex items-center gap-2">
+                            <i data-lucide="bar-chart-3" class="w-5 h-5 text-brand-500"></i>
+                            14-Day Daily Completion Trend
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Percentage of habits completed on each day of the active 2-week window</p>
+                    </div>
+                    <span id="chart-hover-badge" class="text-xs font-mono font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        Hover or click any bar
+                    </span>
+                </div>
+
+                <!-- 14-Bar Chart Canvas -->
+                <div class="relative h-56 pt-6 pb-2 px-2 flex flex-col justify-end border-b border-slate-200 dark:border-slate-800">
+                    <!-- Horizontal Reference Lines -->
+                    <div class="absolute inset-x-0 top-6 bottom-2 flex flex-col justify-between pointer-events-none z-0">
+                        <div class="border-b border-dashed border-slate-200 dark:border-slate-800/80 w-full flex justify-end">
+                            <span class="text-[10px] font-mono text-slate-400 -mt-3.5 bg-white dark:bg-[#161b22] px-1">100%</span>
+                        </div>
+                        <div class="border-b border-dashed border-slate-200 dark:border-slate-800/80 w-full flex justify-end">
+                            <span class="text-[10px] font-mono text-slate-400 -mt-3.5 bg-white dark:bg-[#161b22] px-1">50%</span>
+                        </div>
+                        <div class="w-full"></div>
+                    </div>
+
+                    <!-- 14 Bars -->
+                    <div id="chart-14d-bars" class="relative z-10 grid grid-cols-14 gap-1.5 sm:gap-2 items-end h-full pt-2" style="grid-template-columns: repeat(14, minmax(0, 1fr));">
+                    </div>
+                </div>
+
+                <!-- 14-Day X-Axis Labels -->
+                <div id="chart-14d-labels" class="grid gap-1.5 sm:gap-2 pt-2 text-center" style="grid-template-columns: repeat(14, minmax(0, 1fr));">
+                </div>
+
+                <!-- Week 1 vs Week 2 Comparison Pill -->
+                <div class="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200/60 dark:border-slate-800 text-xs flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex items-center gap-4">
+                        <span class="text-slate-500 dark:text-slate-400">Week 1 Avg: <strong id="chart-wk1-avg" class="font-mono text-slate-800 dark:text-slate-100">0%</strong></span>
+                        <span class="text-slate-500 dark:text-slate-400">Week 2 Avg: <strong id="chart-wk2-avg" class="font-mono text-slate-800 dark:text-slate-100">0%</strong></span>
+                    </div>
+                    <span id="chart-summary-text" class="text-brand-600 dark:text-brand-400 font-semibold font-mono">Consistent progress</span>
+                </div>
+            </section>
+
+            <!-- All-Time Streak Leaderboard & Goal Progress -->
+            <aside class="lg:col-span-4 bg-white dark:bg-[#161b22] p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold flex items-center gap-2">
+                            <i data-lucide="trophy" class="w-5 h-5 text-amber-500"></i>
+                            Streak & 14-Day Target Leaderboard
+                        </h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Ranked by current consecutive day streak</p>
+                    </div>
+                </div>
+
+                <div id="streak-leaderboard" class="space-y-2.5 max-h-[310px] overflow-y-auto pr-1">
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Modal: Create or Edit Habit -->
+    <div id="habit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#161b22] w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-check">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <h3 id="habit-modal-title" class="text-base font-bold flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-brand-500"></i>
+                    <span>Create New Habit</span>
+                </h3>
+                <button onclick="closeHabitModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form id="habit-form" onsubmit="handleSaveHabit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="edit-habit-id" value="">
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Habit Title</label>
+                    <input type="text" id="habit-name-input" required maxlength="48" placeholder="e.g., Strength & Conditioning, Deep Study 2h..."
+                        class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">Category</label>
+                        <input type="text" id="habit-category-input" list="category-suggestions" required maxlength="20" value="Fitness" placeholder="e.g., Fitness, Study"
+                            class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <datalist id="category-suggestions">
+                            <option value="Fitness"></option>
+                            <option value="Health"></option>
+                            <option value="Study"></option>
+                            <option value="Work"></option>
+                            <option value="Mind"></option>
+                        </datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">2-Week Target (14d)</label>
+                        <select id="habit-goal-input" class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="14">14 / 14 days (Daily)</option>
+                            <option value="12">12 / 14 days (6x/wk)</option>
+                            <option value="10" selected>10 / 14 days (5x/wk)</option>
+                            <option value="8">8 / 14 days (4x/wk)</option>
+                            <option value="6">6 / 14 days (3x/wk)</option>
+                            <option value="4">4 / 14 days (2x/wk)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Accent Color</label>
+                    <div class="flex items-center gap-3" id="color-picker">
+                        <button type="button" onclick="selectColor('emerald')" data-color="emerald" class="color-opt w-8 h-8 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-emerald-500 dark:ring-offset-slate-900 transition-transform scale-110"></button>
+                        <button type="button" onclick="selectColor('indigo')" data-color="indigo" class="color-opt w-8 h-8 rounded-full bg-indigo-500 opacity-70 hover:opacity-100 transition-transform"></button>
+                        <button type="button" onclick="selectColor('amber')" data-color="amber" class="color-opt w-8 h-8 rounded-full bg-amber-500 opacity-70 hover:opacity-100 transition-transform"></button>
+                        <button type="button" onclick="selectColor('rose')" data-color="rose" class="color-opt w-8 h-8 rounded-full bg-rose-500 opacity-70 hover:opacity-100 transition-transform"></button>
+                        <button type="button" onclick="selectColor('cyan')" data-color="cyan" class="color-opt w-8 h-8 rounded-full bg-cyan-500 opacity-70 hover:opacity-100 transition-transform"></button>
+                        <button type="button" onclick="selectColor('purple')" data-color="purple" class="color-opt w-8 h-8 rounded-full bg-purple-500 opacity-70 hover:opacity-100 transition-transform"></button>
+                    </div>
+                </div>
+
+                <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="closeHabitModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        Cancel
+                    </button>
+                    <button type="submit" id="habit-submit-btn" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md shadow-brand-600/20">
+                        Save Habit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Confirm Clearing 14-Day Window -->
+    <div id="clear-confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#161b22] w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-check">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base font-bold flex items-center gap-2 text-rose-500">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    <span>Clear Visible 14 Days?</span>
+                </h3>
+                <button onclick="closeClearConfirmModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-3 text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+                <p>Are you sure you want to clear all habit check-ins between <strong id="clear-confirm-range" class="font-mono text-slate-900 dark:text-white">these 14 days</strong>?</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-[#0d1117] p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                    Your habits and historical logs outside this 2-week window will remain untouched.
+                </p>
+            </div>
+            <div class="px-6 py-3.5 bg-slate-50 dark:bg-[#0d1117] border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+                <button type="button" onclick="closeClearConfirmModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmClearAllCheckinsInWindow()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-sm cursor-pointer">
+                    Yes, Clear 14 Days
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Zero-Click Auto-Sync Setup & Startup Script Installer -->
+    <div id="repo-guide-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#161b22] w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-check">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base font-bold flex items-center gap-2">
+                    <i data-lucide="file-json" class="w-5 h-5 text-brand-500"></i>
+                    <span><code class="font-mono">habits-data.json</code> Template &amp; Live Data</span>
+                </h3>
+                <button onclick="closeRepoGuideModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 text-sm max-h-[82vh] overflow-y-auto">
+                <div class="p-3.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs text-slate-600 dark:text-slate-300 space-y-1.5">
+                    <p class="font-bold text-slate-900 dark:text-white">Direct Same-Folder JSON Architecture (<code class="font-mono">./habits-data.json</code>)</p>
+                    <p>On page load, <code class="font-mono">index.html</code> fetches <code class="font-mono">./habits-data.json</code> from the same folder and renders your 14-day dashboard. Every click or habit update automatically sends the updated JSON payload to <code class="font-mono">./habits-data.json</code> and caches a local copy.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="copyRawJSON()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold cursor-pointer">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        Copy JSON to Paste into habits-data.json
+                    </button>
+                    <button onclick="exportJSONFile()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold cursor-pointer">
+                        <i data-lucide="download" class="w-4 h-4 text-brand-500"></i>
+                        Download habits-data.json
+                    </button>
+                    <label class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-dashed border-brand-500/50 bg-brand-500/5 hover:bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-semibold cursor-pointer">
+                        <i data-lucide="upload" class="w-4 h-4"></i>
+                        <span>Load JSON File</span>
+                        <input type="file" accept=".json,application/json" onchange="handleImportFile(event)" class="hidden">
+                    </label>
+                </div>
+
+                <!-- Live Raw JSON Preview -->
+                <div class="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Live <code class="font-mono">habits-data.json</code> Structure</label>
+                        <button onclick="applyRawJsonEdit()" class="text-xs font-semibold text-brand-500 hover:underline cursor-pointer">Apply Edits</button>
+                    </div>
+                    <textarea id="raw-json-preview" rows="10"
+                        class="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                </div>
+            </div>
+
+            <div class="px-6 py-3 bg-slate-50 dark:bg-[#0d1117] border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                <button onclick="closeRepoGuideModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 cursor-pointer">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: GitHub Repo Auto-Sync Configuration -->
+    <div id="github-config-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+        <div class="bg-white dark:bg-[#161b22] w-full max-w-lg rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-check">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base font-bold flex items-center gap-2">
+                    <i data-lucide="github" class="w-5 h-5 text-brand-500"></i>
+                    <span>GitHub Repo Auto-Sync (<code class="font-mono text-xs">habits-data.json</code>)</span>
+                </h3>
+                <button onclick="closeGitHubConfigModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form onsubmit="saveGitHubConfig(event)" class="p-6 space-y-4 text-xs sm:text-sm">
+                <div class="p-3.5 rounded-xl bg-brand-500/10 border border-brand-500/20 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+                    <p class="font-bold text-slate-900 dark:text-white">How GitHub Pages Sync Works:</p>
+                    <p>Every time you check off a habit, this web app uses the official GitHub API to directly update <code class="font-mono">habits-data.json</code> inside your GitHub repository. Your credentials are saved only in your browser.</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">GitHub Username</label>
+                        <input type="text" id="gh-owner-input" required placeholder="e.g., octocat"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Repository Name</label>
+                        <input type="text" id="gh-repo-input" required placeholder="e.g., habit-tracker"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Branch</label>
+                        <input type="text" id="gh-branch-input" required value="main" placeholder="main"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">JSON File Path</label>
+                        <input type="text" id="gh-path-input" required value="habits-data.json" placeholder="habits-data.json"
+                            class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">GitHub Personal Access Token (PAT)</label>
+                        <a href="https://github.com/settings/tokens/new?scopes=repo&description=HabitFlow+Tracker+Sync" target="_blank" rel="noopener noreferrer" class="text-[11px] font-semibold text-brand-500 hover:underline">
+                            Generate Token on GitHub &rarr;
+                        </a>
+                    </div>
+                    <input type="password" id="gh-token-input" required placeholder="ghp_xxxxxxxxxxxxxxxxxxxx or github_pat_..."
+                        class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#0d1117] border border-slate-200 dark:border-slate-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        Requires <code class="font-mono">repo</code> (Classic Token) or <code class="font-mono">Contents: Read &amp; Write</code> (Fine-Grained Token).
+                    </p>
+                </div>
+
+                <div class="pt-3 flex items-center justify-between gap-2 border-t border-slate-200 dark:border-slate-800">
+                    <button type="button" onclick="disconnectGitHubConfig()" class="px-3 py-2 rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-500/10 cursor-pointer">
+                        Disconnect
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="closeGitHubConfigModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold shadow-md shadow-brand-600/20 cursor-pointer">
+                            Connect &amp; Sync Now
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-semibold">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400 dark:text-brand-600"></i>
+        <span id="toast-message">Saved!</span>
+    </div>
+
+    <script>
+        const JSON_FILE_PATH = './habits-data.json';
+        const STORAGE_KEY = 'habitflow_local_v2_data';
+        const GH_CONFIG_KEY = 'habitflow_github_repo_config';
+        const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+        let githubFileSha = null;
+        let syncInProgress = false;
+        let pendingSync = false;
+
+        const COLOR_MAP = {
+            emerald: { bg: 'bg-emerald-500', lightBg: 'bg-emerald-500/15', text: 'text-emerald-500', hover: 'hover:border-emerald-500' },
+            indigo:  { bg: 'bg-indigo-500',  lightBg: 'bg-indigo-500/15',  text: 'text-indigo-500',  hover: 'hover:border-indigo-500' },
+            amber:   { bg: 'bg-amber-500',   lightBg: 'bg-amber-500/15',   text: 'text-amber-500',   hover: 'hover:border-amber-500' },
+            rose:    { bg: 'bg-rose-500',    lightBg: 'bg-rose-500/15',    text: 'text-rose-500',    hover: 'hover:border-rose-500' },
+            cyan:    { bg: 'bg-cyan-500',    lightBg: 'bg-cyan-500/15',    text: 'text-cyan-500',    hover: 'hover:border-cyan-500' },
+            purple:  { bg: 'bg-purple-500',  lightBg: 'bg-purple-500/15',  text: 'text-purple-500',  hover: 'hover:border-purple-500' }
+        };
+
+        // --- Date Formatting & 14-Day Window Helpers ---
+        function toDateKey(dateObj) {
+            const yyyy = dateObj.getFullYear();
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function parseDateKey(keyStr) {
+            const [y, m, d] = keyStr.split('-').map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        function getMondayOfDate(d) {
+            const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            const day = date.getDay();
+            const diff = day === 0 ? -6 : 1 - day;
+            date.setDate(date.getDate() + diff);
+            return date;
+        }
+
+        function addDays(dateObj, numDays) {
+            const copy = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            copy.setDate(copy.getDate() + numDays);
+            return copy;
+        }
+
+        const todayDate = new Date();
+        const todayKey = toDateKey(todayDate);
+        const currentWeekMonday = getMondayOfDate(todayDate);
+        const defaultWindowStartMonday = addDays(currentWeekMonday, -7);
+
+        let windowStartMonday = new Date(defaultWindowStartMonday);
+        let habits = [];
+        let activeFilter = 'all';
+        let selectedColor = 'emerald';
+
+        // Generate array of 14 Date objects for the active 2-week window
+        function getActive14Dates() {
+            const dates = [];
+            for (let i = 0; i < 14; i++) {
+                const d = addDays(windowStartMonday, i);
+                const key = toDateKey(d);
+                const dayIdx = (d.getDay() + 6) % 7;
+                dates.push({
+                    date: d,
+                    key,
+                    dayName: DAYS_SHORT[dayIdx],
+                    dayNum: d.getDate(),
+                    monthShort: d.toLocaleDateString('en-US', { month: 'short' }),
+                    isToday: key === todayKey
+                });
+            }
+            return dates;
+        }
+
+        // Predefined JSON Template Habits
+        function createStarterHabits() {
+            const dates14 = getActive14Dates();
+            const sampleLogs = (pattern) => {
+                const logs = {};
+                dates14.forEach((d, idx) => {
+                    if (d.date <= todayDate && pattern.includes(idx)) {
+                        logs[d.key] = true;
+                    }
+                });
+                return logs;
+            };
+
+            return [
+                {
+                    id: 'hab_1',
+                    name: 'Strength & Conditioning (45m)',
+                    category: 'Fitness',
+                    color: 'emerald',
+                    target14: 10,
+                    logs: sampleLogs([0, 1, 3, 4, 5, 7, 8, 9, 10, 11])
+                },
+                {
+                    id: 'hab_2',
+                    name: 'Deep Focus Architecture / Coding',
+                    category: 'Study',
+                    color: 'indigo',
+                    target14: 12,
+                    logs: sampleLogs([0, 1, 2, 3, 4, 6, 7, 8, 9, 10])
+                },
+                {
+                    id: 'hab_3',
+                    name: 'Hydration (3L Water) & Electrolytes',
+                    category: 'Health',
+                    color: 'cyan',
+                    target14: 14,
+                    logs: sampleLogs([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+                },
+                {
+                    id: 'hab_4',
+                    name: 'Read 20 Pages (Non-Fiction)',
+                    category: 'Mind',
+                    color: 'amber',
+                    target14: 10,
+                    logs: sampleLogs([1, 2, 4, 5, 6, 8, 9, 10])
+                },
+                {
+                    id: 'hab_5',
+                    name: 'Zero Screens 45m Before Sleep',
+                    category: 'Health',
+                    color: 'purple',
+                    target14: 10,
+                    logs: sampleLogs([0, 2, 3, 5, 7, 8, 10])
+                }
+            ];
+        }
+
+        function normalizeHabit(h, idx = 0) {
+            const logs = (h.logs && typeof h.logs === 'object') ? { ...h.logs } : {};
+            return {
+                id: h.id || ('hab_' + Date.now() + '_' + idx),
+                name: String(h.name || 'Untitled Habit').slice(0, 48),
+                category: String(h.category || 'General').slice(0, 20),
+                color: COLOR_MAP[h.color] ? h.color : 'emerald',
+                target14: Math.min(14, Math.max(1, Number(h.target14 || 10))),
+                logs
+            };
+        }
+
+        function safeParseHabitsPayload(rawText) {
+            if (!rawText || !String(rawText).trim()) return null;
+            try {
+                const parsed = JSON.parse(rawText);
+                const list = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.habits) ? parsed.habits : null);
+                if (!list) return null;
+                return {
+                    lastUpdated: parsed.lastUpdated ? new Date(parsed.lastUpdated).getTime() : 0,
+                    habits: list.map(normalizeHabit)
+                };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function buildStoragePayload() {
+            return {
+                app: 'HabitFlow-Local-14Day',
+                version: 2,
+                lastUpdated: new Date().toISOString(),
+                habits: habits
+            };
+        }
+
+        function getGitHubConfig() {
+            try {
+                const raw = localStorage.getItem(GH_CONFIG_KEY);
+                if (!raw) return null;
+                const cfg = JSON.parse(raw);
+                if (cfg && cfg.owner && cfg.repo && cfg.token) {
+                    return {
+                        owner: cfg.owner.trim(),
+                        repo: cfg.repo.trim(),
+                        branch: (cfg.branch || 'main').trim(),
+                        path: (cfg.path || 'habits-data.json').replace(/^\.\//, '').trim(),
+                        token: cfg.token.trim()
+                    };
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        // Automatically infer GitHub username & repo name if hosted on *.github.io
+        function detectGitHubPagesRepo() {
+            const host = window.location.hostname;
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+            if (host.endsWith('.github.io')) {
+                const owner = host.replace('.github.io', '');
+                const repo = pathParts[0] || `${owner}.github.io`;
+                return { owner, repo };
+            }
+            return { owner: '', repo: '' };
+        }
+
+        function utf8ToBase64(str) {
+            return btoa(unescape(encodeURIComponent(str)));
+        }
+
+        function base64ToUtf8(b64) {
+            return decodeURIComponent(escape(atob(b64.replace(/\s/g, ''))));
+        }
+
+        async function fetchFromGitHubRepo(cfg) {
+            const url = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path}?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`;
+            const res = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${cfg.token}`,
+                    'Accept': 'application/vnd.github+json'
+                },
+                cache: 'no-store'
+            });
+
+            if (res.status === 404) {
+                // File doesn't exist in repo yet; will be created on first save
+                githubFileSha = null;
+                return null;
+            }
+
+            if (!res.ok) {
+                throw new Error(`GitHub API ${res.status}`);
+            }
+
+            const data = await res.json();
+            githubFileSha = data.sha;
+            const decodedText = base64ToUtf8(data.content || '');
+            return safeParseHabitsPayload(decodedText);
+        }
+
+        async function pushToGitHubRepo(cfg, jsonStr) {
+            const apiBase = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.path}`;
+
+            // Ensure we have the latest file SHA before committing
+            if (!githubFileSha) {
+                try {
+                    const metaRes = await fetch(`${apiBase}?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`, {
+                        headers: {
+                            'Authorization': `Bearer ${cfg.token}`,
+                            'Accept': 'application/vnd.github+json'
+                        }
+                    });
+                    if (metaRes.ok) {
+                        const meta = await metaRes.json();
+                        githubFileSha = meta.sha;
+                    }
+                } catch (e) {}
+            }
+
+            const bodyPayload = {
+                message: `Update habits-data.json (${new Date().toLocaleDateString()})`,
+                content: utf8ToBase64(jsonStr),
+                branch: cfg.branch
+            };
+            if (githubFileSha) {
+                bodyPayload.sha = githubFileSha;
+            }
+
+            let res = await fetch(apiBase, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${cfg.token}`,
+                    'Accept': 'application/vnd.github+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bodyPayload)
+            });
+
+            // If SHA conflict occurred (409/422), refresh SHA once and retry
+            if (res.status === 409 || res.status === 422) {
+                const metaRes = await fetch(`${apiBase}?ref=${encodeURIComponent(cfg.branch)}&t=${Date.now()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${cfg.token}`,
+                        'Accept': 'application/vnd.github+json'
+                    }
+                });
+                if (metaRes.ok) {
+                    const meta = await metaRes.json();
+                    githubFileSha = meta.sha;
+                    bodyPayload.sha = githubFileSha;
+                    res = await fetch(apiBase, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${cfg.token}`,
+                            'Accept': 'application/vnd.github+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(bodyPayload)
+                    });
+                }
+            }
+
+            if (!res.ok) {
+                throw new Error(`GitHub Write ${res.status}`);
+            }
+
+            const result = await res.json();
+            if (result && result.content && result.content.sha) {
+                githubFileSha = result.content.sha;
+            }
+            return true;
+        }
+
+        // --- Load ./habits-data.json (or GitHub API) on Startup & Render HTML ---
+        async function loadFromJsonAndRender() {
+            let loadedHabits = null;
+            const localBackup = safeParseHabitsPayload(localStorage.getItem(STORAGE_KEY));
+            const ghCfg = getGitHubConfig();
+            updateGitHubButtonUI();
+
+            // 1. If GitHub Repo Sync is configured, pull latest directly from GitHub API
+            if (ghCfg) {
+                setSyncStatus('syncing', `Pulling ${ghCfg.owner}/${ghCfg.repo}/${ghCfg.path}...`);
+                try {
+                    const ghData = await fetchFromGitHubRepo(ghCfg);
+                    if (ghData && ghData.habits.length > 0) {
+                        loadedHabits = ghData.habits;
+                        setSyncStatus('github-ok', `GitHub Synced: ${ghCfg.owner}/${ghCfg.repo}`);
+                    }
+                } catch (err) {
+                    console.warn('GitHub pull error:', err);
+                    setSyncStatus('error', `GitHub Auth/Repo Error — Check settings`);
+                }
+            }
+
+            // 2. Otherwise fetch ./habits-data.json from same folder (works on GitHub Pages & local servers)
+            if (!loadedHabits) {
+                try {
+                    const response = await fetch(`${JSON_FILE_PATH}?t=${Date.now()}`, { cache: 'no-store' });
+                    if (response.ok) {
+                        const text = await response.text();
+                        const fileData = safeParseHabitsPayload(text);
+                        if (fileData && fileData.habits.length > 0) {
+                            if (!localBackup || fileData.lastUpdated >= localBackup.lastUpdated) {
+                                loadedHabits = fileData.habits;
+                            } else {
+                                loadedHabits = localBackup.habits;
+                            }
+                        }
+                    }
+                } catch (err) {}
+            }
+
+            // 3. Fallback to localStorage or starter habits
+            if (!loadedHabits) {
+                if (localBackup && localBackup.habits.length > 0) {
+                    loadedHabits = localBackup.habits;
+                } else {
+                    loadedHabits = createStarterHabits();
+                }
+            }
+
+            habits = loadedHabits;
+            renderAll();
+            await persistData();
+        }
+
+        // --- Save to GitHub Repo + Local Server + localStorage on Every Change ---
+        async function persistData() {
+            const payload = buildStoragePayload();
+            const jsonStr = JSON.stringify(payload, null, 2);
+
+            // 1. Always save immediately to localStorage (shutdown-proof)
+            try {
+                localStorage.setItem(STORAGE_KEY, jsonStr);
+            } catch (e) {}
+
+            const previewEl = document.getElementById('raw-json-preview');
+            if (previewEl) {
+                previewEl.value = jsonStr;
+            }
+
+            // 2. If GitHub Repo Sync is configured, commit directly to GitHub repo
+            const ghCfg = getGitHubConfig();
+            if (ghCfg) {
+                if (syncInProgress) {
+                    pendingSync = true;
+                    return true;
+                }
+                syncInProgress = true;
+                setSyncStatus('syncing', `Committing to ${ghCfg.owner}/${ghCfg.repo}...`);
+                try {
+                    await pushToGitHubRepo(ghCfg, jsonStr);
+                    setSyncStatus('github-ok', `Synced to GitHub (${ghCfg.owner}/${ghCfg.repo})`);
+                } catch (e) {
+                    console.warn('GitHub push failed:', e);
+                    setSyncStatus('error', `GitHub Push Failed — Check Token/Repo`);
+                } finally {
+                    syncInProgress = false;
+                    if (pendingSync) {
+                        pendingSync = false;
+                        persistData();
+                    }
+                }
+                return true;
+            }
+
+            // 3. Otherwise try local server PUT/POST (Replit / Node / Python server)
+            let wroteToJsonFile = false;
+            for (const method of ['PUT', 'POST']) {
+                try {
+                    const res = await fetch(JSON_FILE_PATH, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: jsonStr
+                    });
+                    if (res.ok) {
+                        wroteToJsonFile = true;
+                        break;
+                    }
+                } catch (e) {}
+            }
+
+            if (wroteToJsonFile) {
+                setSyncStatus('local-ok', `Synced with ./habits-data.json`);
+            } else {
+                setSyncStatus('cache-only', `Saved in Browser • Click "Connect GitHub Repo Sync" for Cloud Sync`);
+            }
+            return wroteToJsonFile;
+        }
+
+        function setSyncStatus(mode, message) {
+            const dot = document.getElementById('disk-status-dot');
+            const text = document.getElementById('disk-status-text');
+            const timeEl = document.getElementById('last-saved-time');
+
+            const now = new Date();
+            if (timeEl) {
+                timeEl.textContent = `Updated ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+            }
+
+            if (mode === 'github-ok' || mode === 'local-ok') {
+                dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+                text.innerHTML = `<span class="text-emerald-400 font-semibold">${escapeHtml(message)}</span>`;
+            } else if (mode === 'syncing') {
+                dot.className = 'w-2 h-2 rounded-full bg-brand-400 animate-ping';
+                text.innerHTML = `<span class="text-brand-300">${escapeHtml(message)}</span>`;
+            } else if (mode === 'error') {
+                dot.className = 'w-2 h-2 rounded-full bg-rose-500';
+                text.innerHTML = `<span class="text-rose-400 font-semibold">${escapeHtml(message)}</span>`;
+            } else {
+                dot.className = 'w-2 h-2 rounded-full bg-amber-400';
+                text.innerHTML = `<span class="text-slate-300">${escapeHtml(message)}</span>`;
+            }
+        }
+
+        function updateGitHubButtonUI() {
+            const cfg = getGitHubConfig();
+            const label = document.getElementById('gh-btn-label');
+            const pullBtn = document.getElementById('gh-pull-btn');
+            if (cfg) {
+                label.textContent = `${cfg.owner}/${cfg.repo}`;
+                pullBtn.classList.remove('hidden');
+                pullBtn.classList.add('inline-flex');
+            } else {
+                label.textContent = 'Connect GitHub Repo Sync';
+                pullBtn.classList.add('hidden');
+                pullBtn.classList.remove('inline-flex');
+            }
+        }
+
+        function openGitHubConfigModal() {
+            const cfg = getGitHubConfig();
+            const inferred = detectGitHubPagesRepo();
+            document.getElementById('gh-owner-input').value = (cfg && cfg.owner) || inferred.owner || '';
+            document.getElementById('gh-repo-input').value = (cfg && cfg.repo) || inferred.repo || '';
+            document.getElementById('gh-branch-input').value = (cfg && cfg.branch) || 'main';
+            document.getElementById('gh-path-input').value = (cfg && cfg.path) || 'habits-data.json';
+            document.getElementById('gh-token-input').value = (cfg && cfg.token) || '';
+
+            const modal = document.getElementById('github-config-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeGitHubConfigModal() {
+            const modal = document.getElementById('github-config-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function saveGitHubConfig(e) {
+            e.preventDefault();
+            const cfg = {
+                owner: document.getElementById('gh-owner-input').value.trim(),
+                repo: document.getElementById('gh-repo-input').value.trim(),
+                branch: document.getElementById('gh-branch-input').value.trim() || 'main',
+                path: document.getElementById('gh-path-input').value.trim() || 'habits-data.json',
+                token: document.getElementById('gh-token-input').value.trim()
+            };
+            localStorage.setItem(GH_CONFIG_KEY, JSON.stringify(cfg));
+            githubFileSha = null;
+            updateGitHubButtonUI();
+            closeGitHubConfigModal();
+
+            // Check if repo already has habits-data.json, otherwise push our current habits
+            setSyncStatus('syncing', `Connecting to ${cfg.owner}/${cfg.repo}...`);
+            try {
+                const remoteData = await fetchFromGitHubRepo(cfg);
+                if (remoteData && remoteData.habits && remoteData.habits.length > 0) {
+                    habits = remoteData.habits;
+                    renderAll();
+                }
+                await persistData();
+                showToast(`Connected & synced with ${cfg.owner}/${cfg.repo}!`);
+            } catch (err) {
+                setSyncStatus('error', `GitHub Connection Failed — Verify Repo & Token`);
+                showToast('Could not connect to GitHub — check username, repo, or token');
+            }
+        }
+
+        function disconnectGitHubConfig() {
+            localStorage.removeItem(GH_CONFIG_KEY);
+            githubFileSha = null;
+            updateGitHubButtonUI();
+            closeGitHubConfigModal();
+            setSyncStatus('cache-only', 'Disconnected from GitHub — using local browser storage');
+            showToast('Disconnected GitHub Repo Sync');
+        }
+
+        async function syncFromGitHubNow() {
+            const cfg = getGitHubConfig();
+            if (!cfg) return;
+            setSyncStatus('syncing', `Pulling latest from ${cfg.owner}/${cfg.repo}...`);
+            try {
+                const remoteData = await fetchFromGitHubRepo(cfg);
+                if (remoteData && remoteData.habits) {
+                    habits = remoteData.habits;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(buildStoragePayload(), null, 2));
+                    renderAll();
+                    setSyncStatus('github-ok', `Pulled latest from ${cfg.owner}/${cfg.repo}`);
+                    showToast('Pulled latest habits-data.json from GitHub!');
+                }
+            } catch (e) {
+                setSyncStatus('error', 'Failed to pull from GitHub');
+                showToast('Pull failed — check connection');
+            }
+        }
+
+        // --- All-Time Historical Streak Calculator ---
+        function calculateCurrentStreak(habit) {
+            if (!habit.logs) return 0;
+            let streak = 0;
+            // Start checking from today; if today is not yet checked, start from yesterday
+            let cursor = new Date(todayDate);
+            if (!habit.logs[toDateKey(cursor)]) {
+                cursor = addDays(cursor, -1);
+            }
+            while (habit.logs[toDateKey(cursor)]) {
+                streak++;
+                cursor = addDays(cursor, -1);
+                if (streak > 3650) break; // safety guard
+            }
+            return streak;
+        }
+
+        function calculateBestStreak(habit) {
+            if (!habit.logs) return 0;
+            const checkedKeys = Object.keys(habit.logs).filter(k => habit.logs[k]).sort();
+            if (checkedKeys.length === 0) return 0;
+
+            let maxStreak = 1;
+            let currentRun = 1;
+
+            for (let i = 1; i < checkedKeys.length; i++) {
+                const prevDate = parseDateKey(checkedKeys[i - 1]);
+                const currDate = parseDateKey(checkedKeys[i]);
+                const diffDays = Math.round((currDate - prevDate) / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    currentRun++;
+                    if (currentRun > maxStreak) maxStreak = currentRun;
+                } else if (diffDays > 1) {
+                    currentRun = 1;
+                }
+            }
+            return maxStreak;
+        }
+
+        // --- 14-Day Window Navigation Controls ---
+        function shiftWindow(daysDelta) {
+            windowStartMonday = addDays(windowStartMonday, daysDelta);
+            renderAll();
+        }
+
+        function resetToCurrentWindow() {
+            windowStartMonday = new Date(defaultWindowStartMonday);
+            renderAll();
+        }
+
+        function jumpToDate(dateStr) {
+            if (!dateStr) return;
+            const picked = parseDateKey(dateStr);
+            // Set the 14-day window so the picked week is Week 2 (or starts on Monday of picked week)
+            windowStartMonday = getMondayOfDate(picked);
+            renderAll();
+            showToast(`Jumped to 2-week window starting ${dateStr}`);
+        }
+
+        // --- Render Coordinator ---
+        function renderAll() {
+            const dates14 = getActive14Dates();
+            renderWindowHeader(dates14);
+            renderCategoryFilters();
+            renderTableHeader(dates14);
+            renderHabitRows(dates14);
+            renderKPIStats(dates14);
+            render14DayChart(dates14);
+            renderLeaderboard(dates14);
+            lucide.createIcons();
+        }
+
+        function renderWindowHeader(dates14) {
+            const first = dates14[0].date;
+            const last = dates14[13].date;
+            const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            document.getElementById('window-date-range').textContent = `${fmt(first)} – ${fmt(last)}, ${last.getFullYear()}`;
+
+            const isDefaultWindow = toDateKey(windowStartMonday) === toDateKey(defaultWindowStartMonday);
+            const jumpBtn = document.getElementById('jump-today-btn');
+            const subEl = document.getElementById('window-subtitle');
+
+            if (isDefaultWindow) {
+                jumpBtn.classList.add('hidden');
+                subEl.textContent = 'Previous Week + Current Week (14 Days)';
+            } else {
+                jumpBtn.classList.remove('hidden');
+                subEl.textContent = 'Viewing Historical / Custom 14-Day Window';
+            }
+
+            document.getElementById('jump-date-picker').value = toDateKey(first);
+            document.getElementById('stat-today-label').textContent = todayDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+
+        function renderCategoryFilters() {
+            const container = document.getElementById('category-filters');
+            const defaultCats = ['Fitness', 'Health', 'Study', 'Mind'];
+            const customCats = habits.map(h => h.category).filter(Boolean);
+            const categories = ['all', ...new Set([...defaultCats, ...customCats])];
+
+            container.innerHTML = categories.map(cat => {
+                const isActive = activeFilter === cat;
+                const label = cat === 'all' ? 'All Habits' : escapeHtml(cat);
+                return `
+                    <button onclick="setFilter('${escapeHtml(cat)}')"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer shrink-0
+                        ${isActive
+                            ? 'bg-brand-600 text-white shadow-sm'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderTableHeader(dates14) {
+            const bannerRow = document.getElementById('table-week-banner');
+            const headerRow = document.getElementById('table-header-row');
+
+            const wk1Start = `${dates14[0].monthShort} ${dates14[0].dayNum}`;
+            const wk1End = `${dates14[6].monthShort} ${dates14[6].dayNum}`;
+            const wk2Start = `${dates14[7].monthShort} ${dates14[7].dayNum}`;
+            const wk2End = `${dates14[13].monthShort} ${dates14[13].dayNum}`;
+
+            bannerRow.innerHTML = `
+                <th class="py-1.5 pl-5 pr-3 text-left">Habit & Category</th>
+                <th colspan="7" class="py-1.5 px-2 text-center border-l border-slate-200 dark:border-slate-800 text-brand-600 dark:text-brand-400">
+                    Week 1 (${wk1Start} – ${wk1End})
+                </th>
+                <th colspan="7" class="py-1.5 px-2 text-center border-l border-slate-200 dark:border-slate-800 text-indigo-600 dark:text-indigo-400">
+                    Week 2 (${wk2Start} – ${wk2End})
+                </th>
+                <th colspan="2" class="py-1.5 px-3 text-right border-l border-slate-200 dark:border-slate-800">Stats</th>
+            `;
+
+            let colsHtml = `<th class="py-3 pl-5 pr-3 w-64">Habit</th>`;
+            dates14.forEach((d, idx) => {
+                const weekDivider = (idx === 0 || idx === 7) ? 'border-l border-slate-200/80 dark:border-slate-800' : '';
+                const highlight = d.isToday
+                    ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold'
+                    : '';
+                colsHtml += `
+                    <th class="py-2.5 px-1 text-center w-11 ${weekDivider} ${highlight}">
+                        <div class="flex flex-col items-center leading-tight">
+                            <span class="text-[10px] uppercase">${d.dayName}</span>
+                            <span class="text-xs font-mono mt-0.5 ${d.isToday ? 'px-1.5 py-0.2 rounded bg-brand-600 text-white' : ''}">${d.dayNum}</span>
+                        </div>
+                    </th>
+                `;
+            });
+
+            colsHtml += `
+                <th class="py-3 px-2.5 text-center w-24 border-l border-slate-200/80 dark:border-slate-800">Streak</th>
+                <th class="py-3 pl-2 pr-5 text-right w-28">14d Goal</th>
+            `;
+            headerRow.innerHTML = colsHtml;
+        }
+
+        function renderHabitRows(dates14) {
+            const container = document.getElementById('habit-rows-container');
+            const emptyState = document.getElementById('empty-state');
+
+            const filtered = activeFilter === 'all'
+                ? habits
+                : habits.filter(h => h.category === activeFilter);
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            container.innerHTML = filtered.map((habit) => {
+                const palette = COLOR_MAP[habit.color] || COLOR_MAP.emerald;
+                const doneIn14 = dates14.filter(d => habit.logs && habit.logs[d.key]).length;
+                const target14 = habit.target14 || 10;
+                const goalPct = Math.min(100, Math.round((doneIn14 / target14) * 100));
+                const currentStreak = calculateCurrentStreak(habit);
+                const bestStreak = calculateBestStreak(habit);
+
+                const cells = dates14.map((d, idx) => {
+                    const isChecked = Boolean(habit.logs && habit.logs[d.key]);
+                    const weekDivider = (idx === 0 || idx === 7) ? 'border-l border-slate-200/60 dark:border-slate-800/80' : '';
+                    const todayBg = d.isToday ? 'bg-brand-500/5' : '';
+
+                    return `
+                        <td class="p-1.5 text-center ${weekDivider} ${todayBg}">
+                            <button
+                                onclick="toggleHabitDate('${habit.id}', '${d.key}')"
+                                title="${escapeHtml(habit.name)} — ${d.dayName}, ${d.monthShort} ${d.dayNum} (${d.key})"
+                                class="w-8 h-8 rounded-lg mx-auto flex items-center justify-center transition-all duration-150 cursor-pointer
+                                ${isChecked
+                                    ? `${palette.bg} text-white shadow-sm animate-check`
+                                    : `bg-slate-100 dark:bg-slate-800/80 text-transparent border border-slate-200/80 dark:border-slate-700/70 ${palette.hover} hover:scale-105`
+                                }">
+                                <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+                            </button>
+                        </td>
+                    `;
+                }).join('');
+
+                return `
+                    <tr class="group hover:bg-slate-50/90 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 pl-5 pr-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <span class="w-2 h-8 rounded-full ${palette.bg} shrink-0"></span>
+                                    <div class="min-w-0">
+                                        <p class="font-semibold text-slate-800 dark:text-slate-100 truncate text-xs sm:text-sm">${escapeHtml(habit.name)}</p>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded ${palette.lightBg} ${palette.text}">${escapeHtml(habit.category)}</span>
+                                            <span class="text-[10px] font-mono text-slate-400">Best: ${bestStreak}d</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Row Controls: Move Up/Down, Edit, Delete -->
+                                <div class="opacity-0 group-hover:opacity-100 flex items-center gap-0.5 transition-opacity shrink-0">
+                                    <button onclick="moveHabit('${habit.id}', -1)" title="Move Up" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                                        <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="moveHabit('${habit.id}', 1)" title="Move Down" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200">
+                                        <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="openEditHabitModal('${habit.id}')" title="Edit Habit" class="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 hover:text-brand-500">
+                                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                    <button onclick="deleteHabit('${habit.id}')" title="Delete Habit" class="p-1 rounded hover:bg-rose-500/10 text-slate-400 hover:text-rose-500">
+                                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+
+                        ${cells}
+
+                        <!-- Active Streak Column -->
+                        <td class="py-3 px-2.5 text-center border-l border-slate-200/60 dark:border-slate-800/80">
+                            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-mono font-bold
+                                ${currentStreak > 0
+                                    ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}">
+                                <i data-lucide="flame" class="w-3.5 h-3.5 ${currentStreak >= 3 ? 'fill-amber-500 text-amber-500' : ''}"></i>
+                                <span>${currentStreak}d</span>
+                            </div>
+                        </td>
+
+                        <!-- 14-Day Progress Column -->
+                        <td class="py-3 pl-2 pr-5 text-right">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-xs font-mono font-bold ${doneIn14 >= target14 ? 'text-emerald-500' : 'text-slate-600 dark:text-slate-300'}">
+                                    ${doneIn14}/${target14} <span class="text-[10px] font-normal text-slate-400">(${goalPct}%)</span>
+                                </span>
+                                <div class="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full ${palette.bg} transition-all duration-300" style="width: ${goalPct}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderKPIStats(dates14) {
+            const totalHabits = habits.length;
+            const totalPossible14 = totalHabits * 14;
+            let totalChecked14 = 0;
+
+            habits.forEach(h => {
+                dates14.forEach(d => {
+                    if (h.logs && h.logs[d.key]) totalChecked14++;
+                });
+            });
+
+            const rate14 = totalPossible14 > 0 ? Math.round((totalChecked14 / totalPossible14) * 100) : 0;
+            document.getElementById('stat-14d-rate').textContent = `${rate14}%`;
+            document.getElementById('stat-14d-fraction').textContent = `${totalChecked14}/${totalPossible14}`;
+            document.getElementById('stat-ring-circle').setAttribute('stroke-dasharray', `${rate14}, 100`);
+
+            // Best Active Streak
+            let topStreak = 0;
+            let topHabitName = 'Check off a habit today';
+            habits.forEach(h => {
+                const s = calculateCurrentStreak(h);
+                if (s > topStreak) {
+                    topStreak = s;
+                    topHabitName = h.name;
+                }
+            });
+            document.getElementById('stat-best-streak').textContent = topStreak;
+            document.getElementById('stat-best-habit').textContent = topHabitName;
+
+            // Today's Score
+            const todayDone = habits.filter(h => h.logs && h.logs[todayKey]).length;
+            const todayPct = totalHabits > 0 ? Math.round((todayDone / totalHabits) * 100) : 0;
+            document.getElementById('stat-today-count').textContent = `${todayDone}/${totalHabits}`;
+            document.getElementById('stat-today-percent').textContent = `${todayPct}%`;
+
+            // Perfect Days in 14-day window & total historical check-ins
+            let perfect14 = 0;
+            if (totalHabits > 0) {
+                dates14.forEach(d => {
+                    if (habits.every(h => h.logs && h.logs[d.key])) perfect14++;
+                });
+            }
+            const totalAllTimeChecks = habits.reduce((sum, h) => sum + Object.values(h.logs || {}).filter(Boolean).length, 0);
+            document.getElementById('stat-perfect-days').textContent = perfect14;
+            document.getElementById('stat-total-historical').textContent = `${totalAllTimeChecks} all-time check-ins stored`;
+        }
+
+        function render14DayChart(dates14) {
+            const barsEl = document.getElementById('chart-14d-bars');
+            const labelsEl = document.getElementById('chart-14d-labels');
+            const totalHabits = habits.length;
+
+            const stats = dates14.map((d, idx) => {
+                const done = habits.filter(h => h.logs && h.logs[d.key]).length;
+                const pct = totalHabits > 0 ? Math.round((done / totalHabits) * 100) : 0;
+                return { ...d, idx, done, totalHabits, pct };
+            });
+
+            barsEl.innerHTML = stats.map(s => {
+                const isPerfect = s.pct === 100 && totalHabits > 0;
+                const barClass = isPerfect
+                    ? 'bg-gradient-to-t from-emerald-600 to-emerald-400'
+                    : s.isToday
+                        ? 'bg-gradient-to-t from-brand-600 to-brand-400'
+                        : s.idx < 7
+                            ? 'bg-brand-500/65 hover:bg-brand-500'
+                            : 'bg-indigo-500/80 hover:bg-indigo-400';
+
+                const hStyle = s.pct === 0 ? '6%' : `${s.pct}%`;
+
+                return `
+                    <div class="h-full flex flex-col justify-end items-center group cursor-pointer"
+                         onmouseenter="inspect14DayBar(${s.idx})"
+                         onclick="inspect14DayBar(${s.idx})">
+                        <span class="text-[9px] font-mono font-bold mb-1 transition-opacity
+                            ${s.isToday ? 'text-brand-500 opacity-100' : 'text-slate-400 opacity-0 group-hover:opacity-100'}">
+                            ${s.pct}%
+                        </span>
+                        <div class="w-full max-w-[28px] h-full bg-slate-100 dark:bg-slate-800/70 rounded-t-lg flex items-end p-0.5 overflow-hidden">
+                            <div class="w-full rounded-t-md bar-transition ${barClass}" style="height: ${hStyle}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            labelsEl.innerHTML = stats.map(s => `
+                <div class="flex flex-col items-center leading-tight ${s.isToday ? 'text-brand-600 dark:text-brand-400 font-bold' : 'text-slate-500 dark:text-slate-400'}">
+                    <span class="text-[10px]">${s.dayName.slice(0, 2)}</span>
+                    <span class="text-[10px] font-mono">${s.dayNum}</span>
+                </div>
+            `).join('');
+
+            const wk1Avg = Math.round(stats.slice(0, 7).reduce((a, b) => a + b.pct, 0) / 7);
+            const wk2Avg = Math.round(stats.slice(7, 14).reduce((a, b) => a + b.pct, 0) / 7);
+            document.getElementById('chart-wk1-avg').textContent = `${wk1Avg}%`;
+            document.getElementById('chart-wk2-avg').textContent = `${wk2Avg}%`;
+
+            const diff = wk2Avg - wk1Avg;
+            const summaryEl = document.getElementById('chart-summary-text');
+            if (diff > 0) summaryEl.textContent = `+${diff}% improvement in Week 2`;
+            else if (diff < 0) summaryEl.textContent = `${diff}% vs Week 1`;
+            else summaryEl.textContent = `Steady pace across both weeks`;
+        }
+
+        function inspect14DayBar(idx) {
+            const dates14 = getActive14Dates();
+            const d = dates14[idx];
+            if (!d) return;
+            const totalHabits = habits.length;
+            const done = habits.filter(h => h.logs && h.logs[d.key]).length;
+            const pct = totalHabits > 0 ? Math.round((done / totalHabits) * 100) : 0;
+
+            document.getElementById('chart-hover-badge').textContent = `${d.dayName}, ${d.monthShort} ${d.dayNum}: ${done}/${totalHabits} (${pct}%)`;
+        }
+
+        function renderLeaderboard(dates14) {
+            const container = document.getElementById('streak-leaderboard');
+            if (habits.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No habits tracked yet.</p>`;
+                return;
+            }
+
+            const sorted = [...habits].sort((a, b) => calculateCurrentStreak(b) - calculateCurrentStreak(a));
+
+            container.innerHTML = sorted.map((habit, i) => {
+                const curStreak = calculateCurrentStreak(habit);
+                const bestStreak = calculateBestStreak(habit);
+                const done14 = dates14.filter(d => habit.logs && habit.logs[d.key]).length;
+                const target14 = habit.target14 || 10;
+                const palette = COLOR_MAP[habit.color] || COLOR_MAP.emerald;
+
+                return `
+                    <div class="p-3 rounded-xl bg-slate-50/90 dark:bg-[#0d1117] border border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-6 h-6 rounded-lg ${palette.lightBg} ${palette.text} font-mono font-bold text-xs flex items-center justify-center shrink-0">
+                                ${i + 1}
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold truncate">${escapeHtml(habit.name)}</p>
+                                <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                                    14d: ${done14}/${target14} • Best: ${bestStreak}d
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-500 font-mono font-bold text-xs shrink-0">
+                            <i data-lucide="flame" class="w-3.5 h-3.5"></i>
+                            <span>${curStreak}d</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- User Interactions (Toggle Day, Add/Edit/Delete/Move Habits) ---
+        async function toggleHabitDate(habitId, dateKey) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit) return;
+            if (!habit.logs) habit.logs = {};
+
+            if (habit.logs[dateKey]) {
+                delete habit.logs[dateKey];
+            } else {
+                habit.logs[dateKey] = true;
+            }
+
+            await persistData();
+            renderAll();
+
+            const dates14 = getActive14Dates();
+            const doneIn14 = dates14.filter(d => habit.logs[d.key]).length;
+            if (habit.logs[dateKey] && doneIn14 === habit.target14) {
+                triggerConfetti();
+                showToast(`2-Week Goal (${habit.target14}d) achieved for "${habit.name}"!`);
+            }
+        }
+
+        async function markAllToday() {
+            if (habits.length === 0) return;
+            habits.forEach(h => {
+                if (!h.logs) h.logs = {};
+                h.logs[todayKey] = true;
+            });
+            await persistData();
+            renderAll();
+            triggerConfetti();
+            showToast(`Checked off all habits for Today (${todayKey})!`);
+        }
+
+        function openClearConfirmModal() {
+            const dates14 = getActive14Dates();
+            const first = dates14[0].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const last = dates14[13].date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('clear-confirm-range').textContent = `${first} – ${last}`;
+            const modal = document.getElementById('clear-confirm-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeClearConfirmModal() {
+            const modal = document.getElementById('clear-confirm-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function confirmClearAllCheckinsInWindow() {
+            const dates14 = getActive14Dates();
+            habits.forEach(h => {
+                if (!h.logs) return;
+                dates14.forEach(d => delete h.logs[d.key]);
+            });
+            closeClearConfirmModal();
+            await persistData();
+            renderAll();
+            showToast('Cleared check-ins for the visible 14-day window');
+        }
+
+        async function loadStarterHabits() {
+            habits = createStarterHabits();
+            await persistData();
+            renderAll();
+            showToast('Loaded sample 14-day habits');
+        }
+
+        function setFilter(cat) {
+            activeFilter = cat;
+            renderAll();
+        }
+
+        // --- Habit Modal (Add & Edit) ---
+        function openHabitModal() {
+            document.getElementById('edit-habit-id').value = '';
+            document.getElementById('habit-form').reset();
+            document.getElementById('habit-modal-title').innerHTML = `<i data-lucide="sparkles" class="w-5 h-5 text-brand-500"></i><span>Create New Habit</span>`;
+            selectColor('emerald');
+            const modal = document.getElementById('habit-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+            document.getElementById('habit-name-input').focus();
+        }
+
+        function openEditHabitModal(habitId) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit) return;
+
+            document.getElementById('edit-habit-id').value = habit.id;
+            document.getElementById('habit-name-input').value = habit.name;
+            document.getElementById('habit-category-input').value = habit.category;
+            document.getElementById('habit-goal-input').value = String(habit.target14 || 10);
+            selectColor(habit.color || 'emerald');
+
+            document.getElementById('habit-modal-title').innerHTML = `<i data-lucide="pencil" class="w-5 h-5 text-brand-500"></i><span>Edit Habit</span>`;
+            const modal = document.getElementById('habit-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+            document.getElementById('habit-name-input').focus();
+        }
+
+        function closeHabitModal() {
+            const modal = document.getElementById('habit-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function selectColor(color) {
+            selectedColor = color;
+            document.querySelectorAll('.color-opt').forEach(btn => {
+                if (btn.dataset.color === color) {
+                    btn.className = `color-opt w-8 h-8 rounded-full bg-${color}-500 ring-2 ring-offset-2 ring-${color}-500 dark:ring-offset-slate-900 transition-transform scale-110`;
+                } else {
+                    btn.className = `color-opt w-8 h-8 rounded-full bg-${btn.dataset.color}-500 opacity-70 hover:opacity-100 transition-transform`;
+                }
+            });
+        }
+
+        async function handleSaveHabit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('edit-habit-id').value;
+            const name = document.getElementById('habit-name-input').value.trim();
+            const category = document.getElementById('habit-category-input').value.trim() || 'General';
+            const target14 = parseInt(document.getElementById('habit-goal-input').value, 10) || 10;
+
+            if (!name) return;
+
+            if (editId) {
+                const existing = habits.find(h => h.id === editId);
+                if (existing) {
+                    existing.name = name;
+                    existing.category = category;
+                    existing.target14 = target14;
+                    existing.color = selectedColor;
+                    showToast(`Updated "${name}"`);
+                }
+            } else {
+                habits.push({
+                    id: 'hab_' + Date.now(),
+                    name,
+                    category,
+                    color: selectedColor,
+                    target14,
+                    logs: {}
+                });
+                showToast(`Added "${name}"`);
+            }
+
+            closeHabitModal();
+            await persistData();
+            renderAll();
+        }
+
+        async function deleteHabit(id) {
+            const target = habits.find(h => h.id === id);
+            habits = habits.filter(h => h.id !== id);
+            await persistData();
+            renderAll();
+            if (target) showToast(`Deleted "${target.name}"`);
+        }
+
+        async function moveHabit(id, direction) {
+            const idx = habits.findIndex(h => h.id === id);
+            if (idx === -1) return;
+            const newIdx = idx + direction;
+            if (newIdx < 0 || newIdx >= habits.length) return;
+            const temp = habits[idx];
+            habits[idx] = habits[newIdx];
+            habits[newIdx] = temp;
+            await persistData();
+            renderAll();
+        }
+
+        // --- Repo Guide Modal & Manual JSON Export/Import ---
+        function openRepoGuideModal() {
+            const previewEl = document.getElementById('raw-json-preview');
+            if (previewEl) {
+                previewEl.value = JSON.stringify(buildStoragePayload(), null, 2);
+            }
+            const modal = document.getElementById('repo-guide-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeRepoGuideModal() {
+            const modal = document.getElementById('repo-guide-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function exportJSONFile() {
+            const dataStr = JSON.stringify(buildStoragePayload(), null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'habits-data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('Downloaded habits-data.json');
+        }
+
+        function copyRawJSON() {
+            const text = JSON.stringify(buildStoragePayload(), null, 2);
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                showToast('Copied JSON to clipboard!');
+            } catch (e) {
+                showToast('Copy failed');
+            }
+            document.body.removeChild(ta);
+        }
+
+        function handleImportFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const parsedPayload = safeParseHabitsPayload(e.target.result);
+                    habits = (parsedPayload && parsedPayload.habits.length > 0)
+                        ? parsedPayload.habits
+                        : createStarterHabits();
+                    await persistData();
+                    renderAll();
+                    closeRepoGuideModal();
+                    showToast(`Loaded ${habits.length} habits from ${file.name}!`);
+                } catch (err) {
+                    showToast('Invalid JSON syntax in file');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        async function applyRawJsonEdit() {
+            const raw = document.getElementById('raw-json-preview').value;
+            try {
+                const parsed = JSON.parse(raw);
+                const list = Array.isArray(parsed) ? parsed : (parsed.habits || []);
+                habits = list.map(normalizeHabit);
+                await persistData();
+                renderAll();
+                showToast('Applied custom JSON changes!');
+            } catch (e) {
+                showToast('Invalid JSON syntax — check formatting');
+            }
+        }
+
+        // --- Utilities ---
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({ particleCount: 55, spread: 60, origin: { y: 0.75 } });
+            }
+        }
+
+        let toastTimeout = null;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2600);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            })[m]);
+        }
+
+        // Boot Application from ./habits-data.json
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromJsonAndRender();
+        });
+    </script>
+</body>
+</html>
