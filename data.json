@@ -39,7 +39,9 @@
   ],
   "checks": {
     "hmv9z6traubln": {},
-    "hmv9zxlnuer09": {},
+    "hmv9zxlnuer09": {
+      "2026-10-16": true
+    },
     "hmv9zxzcvrkqd": {},
     "hmv9zxpm356gz": {}
   }
