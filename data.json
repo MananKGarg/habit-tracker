@@ -54,13 +54,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmve6uu7r7i2r",
-      "name": "Job switch preparation",
-      "color": "#4AA3F0",
-      "createdAt": "2026-10-19",
-      "section": "sec-default"
-    },
-    {
       "id": "hmv9zxzcvrkqd",
       "name": "Healthy eating",
       "color": "#2BB3A3",
@@ -136,6 +129,13 @@
       "color": "#E8C547",
       "createdAt": "2026-10-19",
       "section": "smve7b5hwz5z5"
+    },
+    {
+      "id": "hmve6uu7r7i2r",
+      "name": "Job switch preparation",
+      "color": "#4AA3F0",
+      "createdAt": "2026-10-19",
+      "section": "smve7cp3ffuyk"
     },
     {
       "id": "hmve7cvj64tee",
