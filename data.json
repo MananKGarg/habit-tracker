@@ -19,6 +19,13 @@
   ],
   "habits": [
     {
+      "id": "hmve5sbdl606k",
+      "name": "Exercise",
+      "color": "#6C72E8",
+      "createdAt": "2026-10-18",
+      "section": "sec-default"
+    },
+    {
       "id": "hmve6sxclzek5",
       "name": "Phone usage < 30 mins",
       "color": "#7BC96F",
@@ -37,13 +44,6 @@
       "name": "Wake up at 6AM",
       "createdAt": "2026-10-16",
       "color": "#F0645A",
-      "section": "sec-default"
-    },
-    {
-      "id": "hmve5sbdl606k",
-      "name": "Exercise",
-      "color": "#6C72E8",
-      "createdAt": "2026-10-18",
       "section": "sec-default"
     },
     {
