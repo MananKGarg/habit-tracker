@@ -94,6 +94,21 @@
   table{border-collapse:separate;border-spacing:0;width:100%}
   th,td{padding:9px 3px;text-align:center;border-bottom:1px solid var(--line)}
   tbody tr:last-child td{border-bottom:0}
+  /* Drag to reorder */
+  .hn{margin-left:-12px}
+  .grip{width:20px;height:32px;flex:none;border:0;padding:0;background:transparent;color:var(--muted);display:grid;place-items:center;
+        border-radius:6px;cursor:grab;touch-action:none;opacity:.45;transition:opacity .15s,background .15s;margin-right:-6px}
+  .grip svg{width:14px;height:14px}
+  tr:hover .grip,.grip:focus-visible{opacity:1}
+  .grip:hover{background:var(--surface-2)}
+  @media (hover:none){.grip{opacity:.7}}
+  tbody tr.shift{transition:transform .18s ease}
+  tbody tr.dragging{position:relative;z-index:5}
+  tbody tr.dragging td{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+        box-shadow:0 12px 18px -10px rgba(0,0,0,.22)}
+  tbody tr.dragging td.today{background:color-mix(in srgb,var(--surface-2) 70%,var(--surface))}
+  tbody tr.dragging .grip{opacity:1;cursor:grabbing;background:var(--surface-2)}
+  body.is-dragging,body.is-dragging *{cursor:grabbing !important;user-select:none}
   thead th{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:14px 3px 10px}
   thead .dnum{display:grid;place-items:center;width:28px;height:28px;margin:4px auto 0;border-radius:50%;font-size:14px;color:var(--text);text-transform:none;letter-spacing:0;font-weight:600}
   thead th.today .dnum{background:var(--ink);color:var(--ink-text)}
@@ -206,7 +221,7 @@
       Add it above, then tap a square each day you do it.
     </div>
   </div>
-  <p class="tip">Tap a habit's dot to change its colour · tap its name to rename · counts start from <span id="startLabel"></span></p>
+  <p class="tip">Drag ⋮⋮ to reorder · tap a habit's dot to change its colour · tap its name to rename · counts start from <span id="startLabel"></span></p>
 </div>
 
 <div id="picker" class="picker" hidden></div>
@@ -233,7 +248,8 @@ const $ = id => document.getElementById(id);
 
 const PALETTE = ['#F0645A', '#F59E42', '#E8C547', '#7BC96F', '#2BB3A3', '#4AA3F0', '#6C72E8', '#A66BE8', '#EC6BB0', '#8A94A6'];
 const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const TRASH = '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
+const GRIP = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg>';
+const TRASH ='<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>';
 
 // ---------- local storage helpers ----------
 const load  = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
@@ -492,8 +508,9 @@ function render() {
     const c = state.checks[h.id] || {};
     const { last14, total } = counts(h.id);
     const s = streak(h.id);
-    html += `<tr style="--hc:${h.color};--hc-ink:${inkFor(h.color)}">
+    html += `<tr data-row="${h.id}" style="--hc:${h.color};--hc-ink:${inkFor(h.color)}">
       <td class="name"><div class="hn">
+        <button class="grip" data-grip="${h.id}" title="Drag to reorder" aria-label="Reorder ${esc(h.name)} (drag, or use arrow keys)">${GRIP}</button>
         <button class="dot" data-color="${h.id}" aria-label="Change colour of ${esc(h.name)}"></button>
         <div class="hmeta"><span class="htitle" data-rename="${h.id}" title="Click to rename">${esc(h.name)}</span>
         <span class="hsub"><span class="chip" title="Days done in the last 14 days (ending today)"><b>${last14}</b>/14 last 14 days</span><span class="chip" title="All days done since ${startLabel()}"><b>${total}</b>/${trackedDays()} since ${startLabel()}</span></span></div>
@@ -592,6 +609,75 @@ $('grid').addEventListener('click', e => {
     const h = state.habits.find(x => x.id === ren.dataset.rename);
     const name = h && prompt('Rename habit', h.name);
     if (name && name.trim()) { h.name = name.trim().slice(0, 60); commit(); }
+  }
+});
+
+// ---------- drag to reorder ----------
+// Rows are moved visually with transforms during the drag, and the real order is saved on release.
+let drag = null;
+
+function moveHabit(from, to) {
+  if (from === to || to < 0 || to >= state.habits.length) return false;
+  const [h] = state.habits.splice(from, 1);
+  state.habits.splice(to, 0, h);
+  return true;
+}
+
+$('grid').addEventListener('pointerdown', e => {
+  const g = e.target.closest('[data-grip]');
+  if (!g || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  e.preventDefault();
+  closePicker();
+  const rows = [...$('grid').tBodies[0].rows];
+  const row = g.closest('tr');
+  const from = rows.indexOf(row);
+  const boxes = rows.map(r => r.getBoundingClientRect());
+  drag = { rows, row, from, to: from, boxes, startY: e.clientY, h: boxes[from].height, id: g.dataset.grip };
+  row.classList.add('dragging');
+  rows.forEach(r => { if (r !== row) r.classList.add('shift'); });
+  document.body.classList.add('is-dragging');
+});
+
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const { rows, row, from, boxes, h } = drag;
+  const top = boxes[0].top, bottom = boxes[boxes.length - 1].bottom;
+  // Keep the dragged row inside the table
+  const dy = Math.max(top - boxes[from].top, Math.min(e.clientY - drag.startY, bottom - boxes[from].bottom));
+  row.style.transform = `translateY(${dy}px)`;
+  const center = boxes[from].top + h / 2 + dy;
+  let to = 0;
+  boxes.forEach((b, k) => { if (k !== from && b.top + b.height / 2 < center) to++; });
+  drag.to = to;
+  rows.forEach((r, k) => {
+    if (k === from) return;
+    let shift = 0;
+    if (from < to && k > from && k <= to) shift = -h;
+    if (to < from && k >= to && k < from) shift = h;
+    r.style.transform = shift ? `translateY(${shift}px)` : '';
+  });
+});
+
+function endDrag() {
+  if (!drag) return;
+  const { rows, from, to, id } = drag;
+  drag = null;
+  document.body.classList.remove('is-dragging');
+  rows.forEach(r => { r.style.transform = ''; r.classList.remove('shift', 'dragging'); });
+  if (moveHabit(from, to)) commit();
+}
+window.addEventListener('pointerup', endDrag);
+window.addEventListener('pointercancel', endDrag);
+
+// Keyboard: focus the handle, then ArrowUp / ArrowDown
+$('grid').addEventListener('keydown', e => {
+  const g = e.target.closest('[data-grip]');
+  if (!g || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+  e.preventDefault();
+  const i = state.habits.findIndex(h => h.id === g.dataset.grip);
+  if (moveHabit(i, i + (e.key === 'ArrowUp' ? -1 : 1))) {
+    commit();
+    $('grid').querySelector(`[data-grip="${g.dataset.grip}"]`)?.focus();
   }
 });
 
