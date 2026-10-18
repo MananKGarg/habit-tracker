@@ -89,6 +89,12 @@
       "name": "External reading",
       "color": "#2BB3A3",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve6uu7r7i2r",
+      "name": "Job switch preparation",
+      "color": "#4AA3F0",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
