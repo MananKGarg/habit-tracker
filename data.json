@@ -64,13 +64,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmve68bkbhvj2",
-      "name": "Chest",
-      "color": "#F59E42",
-      "createdAt": "2026-10-19",
-      "section": "sec-default"
-    },
-    {
       "id": "hmve68ougryxp",
       "name": "Shouders",
       "color": "#E8C547",
@@ -130,6 +123,13 @@
       "id": "hmve689x84u3u",
       "name": "Back",
       "color": "#F0645A",
+      "createdAt": "2026-10-19",
+      "section": "smve7b5hwz5z5"
+    },
+    {
+      "id": "hmve68bkbhvj2",
+      "name": "Chest",
+      "color": "#F59E42",
       "createdAt": "2026-10-19",
       "section": "smve7b5hwz5z5"
     }
