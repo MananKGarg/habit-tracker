@@ -25,6 +25,12 @@
       "createdAt": "2026-10-16"
     },
     {
+      "id": "hmve6uu7r7i2r",
+      "name": "Job switch preparation",
+      "color": "#4AA3F0",
+      "createdAt": "2026-10-19"
+    },
+    {
       "id": "hmv9zxzcvrkqd",
       "name": "Healthy eating",
       "color": "#2BB3A3",
@@ -88,12 +94,6 @@
       "id": "hmve68ougryxp",
       "name": "Shouders",
       "color": "#E8C547",
-      "createdAt": "2026-10-19"
-    },
-    {
-      "id": "hmve6uu7r7i2r",
-      "name": "Job switch preparation",
-      "color": "#4AA3F0",
       "createdAt": "2026-10-19"
     }
   ],
