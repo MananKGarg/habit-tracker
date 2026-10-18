@@ -1,16 +1,16 @@
 {
   "habits": [
     {
-      "id": "hmv9z6traubln",
-      "name": "Wake up at 6AM",
-      "createdAt": "2026-10-16",
-      "color": "#F0645A"
-    },
-    {
       "id": "hmve6sxclzek5",
       "name": "Phone usage < 30 mins",
       "color": "#7BC96F",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmv9z6traubln",
+      "name": "Wake up at 6AM",
+      "createdAt": "2026-10-16",
+      "color": "#F0645A"
     },
     {
       "id": "hmv9zwpimuz9o",
