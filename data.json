@@ -60,13 +60,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmve6vxdbyx9y",
-      "name": "Protein shake 1 scoop",
-      "color": "#6C72E8",
-      "createdAt": "2026-10-19",
-      "section": "sec-default"
-    },
-    {
       "id": "hmve6uji7ety3",
       "name": "External reading",
       "color": "#2BB3A3",
@@ -127,6 +120,13 @@
       "name": "Cardio activity",
       "color": "#E8C547",
       "createdAt": "2026-10-16",
+      "section": "smve793y24i0n"
+    },
+    {
+      "id": "hmve6vxdbyx9y",
+      "name": "Protein shake 1 scoop",
+      "color": "#6C72E8",
+      "createdAt": "2026-10-19",
       "section": "smve793y24i0n"
     }
   ],
