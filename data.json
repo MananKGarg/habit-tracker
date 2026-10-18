@@ -64,13 +64,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmve6885wl20r",
-      "name": "Triceps",
-      "color": "#8A94A6",
-      "createdAt": "2026-10-19",
-      "section": "sec-default"
-    },
-    {
       "id": "hmve689x84u3u",
       "name": "Back",
       "color": "#F0645A",
@@ -130,6 +123,13 @@
       "id": "hmve685vc5rd5",
       "name": "Biceps",
       "color": "#EC6BB0",
+      "createdAt": "2026-10-19",
+      "section": "smve7b5hwz5z5"
+    },
+    {
+      "id": "hmve6885wl20r",
+      "name": "Triceps",
+      "color": "#8A94A6",
       "createdAt": "2026-10-19",
       "section": "smve7b5hwz5z5"
     }
