@@ -64,13 +64,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmve67z8g1uj8",
-      "name": "Legs",
-      "color": "#A66BE8",
-      "createdAt": "2026-10-19",
-      "section": "sec-default"
-    },
-    {
       "id": "hmve685vc5rd5",
       "name": "Biceps",
       "color": "#EC6BB0",
@@ -132,6 +125,13 @@
       "color": "#7BC96F",
       "createdAt": "2026-10-16",
       "section": "smve793y24i0n"
+    },
+    {
+      "id": "hmve67z8g1uj8",
+      "name": "Legs",
+      "color": "#A66BE8",
+      "createdAt": "2026-10-19",
+      "section": "smve7b5hwz5z5"
     }
   ],
   "checks": {
