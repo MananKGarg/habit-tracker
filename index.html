@@ -99,7 +99,8 @@
   thead th.today .dnum{background:var(--ink);color:var(--ink-text)}
   td.today{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
   .wk{border-left:1px dashed var(--line)}
-  .name{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left;padding-left:18px;padding-right:12px;min-width:180px;max-width:250px}
+  .name{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left;padding-left:18px;padding-right:12px;min-width:200px;max-width:280px}
+  @media (max-width:640px){.name{min-width:170px;max-width:190px}}
   thead th.name{font-size:11px}
   .hn{display:flex;align-items:center;gap:12px;min-width:0}
   .dot{width:14px;height:14px;border-radius:50%;border:0;padding:0;background:var(--hc);flex:none;cursor:pointer;box-shadow:0 0 0 3px color-mix(in srgb,var(--hc) 22%,transparent);transition:transform .15s}
@@ -107,7 +108,9 @@
   .hmeta{min-width:0}
   .htitle{font-weight:500;cursor:pointer;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .htitle:hover{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
-  .hsub{font-size:12px;color:var(--muted)}
+  .hsub{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;margin-top:3px}
+  .chip{white-space:nowrap;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,var(--hc) 12%,transparent)}
+  .chip b{color:var(--text);font-weight:600}
   .cell{width:32px;height:32px;margin:0 auto;border-radius:10px;padding:0;cursor:pointer;display:grid;place-items:center;
         border:1.5px solid color-mix(in srgb,var(--hc) 32%,transparent);
         background:color-mix(in srgb,var(--hc) 7%,transparent);
@@ -203,7 +206,7 @@
       Add it above, then tap a square each day you do it.
     </div>
   </div>
-  <p class="tip">Tap a habit's dot to change its colour · tap its name to rename</p>
+  <p class="tip">Tap a habit's dot to change its colour · tap its name to rename · counts start from <span id="startLabel"></span></p>
 </div>
 
 <div id="picker" class="picker" hidden></div>
@@ -403,6 +406,24 @@ function streak(id) {
   return n;
 }
 
+// Counting starts on this date; ticks before it are ignored in the counts
+const TRACK_START = '2026-10-16';
+const startLabel = () => new Date(TRACK_START + 'T00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+// Days from the start date to today, inclusive
+const trackedDays = () => Math.max(0, Math.round((today() - new Date(TRACK_START + 'T00:00')) / 864e5) + 1);
+
+function counts(id) {
+  const c = state.checks[id] || {};
+  const t = ymd(today()), from14 = ymd(addDays(today(), -13));
+  let last14 = 0, total = 0;
+  for (const k in c) {
+    if (!c[k] || k < TRACK_START || k > t) continue;
+    total++;
+    if (k >= from14) last14++;
+  }
+  return { last14, total };
+}
+
 function nextColor() {
   const used = new Set(state.habits.map(h => h.color));
   return PALETTE.find(c => !used.has(c)) || PALETTE[state.habits.length % PALETTE.length];
@@ -447,7 +468,8 @@ function render() {
   const t = ymd(today());
   const short = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 
-  $('todayLabel').textContent = today().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  $('startLabel').textContent = startLabel();
+  $('todayLabel').textContent =today().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
   $('range').textContent = `${short(days[0])} – ${short(days[13])}`;
   $('next').disabled = endOffset <= -maxAhead();
   $('todayBtn').disabled = endOffset === 0;
@@ -468,13 +490,13 @@ function render() {
 
   for (const h of state.habits) {
     const c = state.checks[h.id] || {};
-    const inWindow = days.filter(d => c[ymd(d)]).length;
+    const { last14, total } = counts(h.id);
     const s = streak(h.id);
     html += `<tr style="--hc:${h.color};--hc-ink:${inkFor(h.color)}">
       <td class="name"><div class="hn">
         <button class="dot" data-color="${h.id}" aria-label="Change colour of ${esc(h.name)}"></button>
         <div class="hmeta"><span class="htitle" data-rename="${h.id}" title="Click to rename">${esc(h.name)}</span>
-        <span class="hsub">${inWindow}/14 days</span></div>
+        <span class="hsub"><span class="chip" title="Days done in the last 14 days (ending today)"><b>${last14}</b>/14 last 14 days</span><span class="chip" title="All days done since ${startLabel()}"><b>${total}</b>/${trackedDays()} since ${startLabel()}</span></span></div>
       </div></td>`;
     days.forEach((d, i) => {
       const key = ymd(d), done = !!c[key];
