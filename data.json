@@ -13,6 +13,12 @@
       "color": "#F0645A"
     },
     {
+      "id": "hmve5sbdl606k",
+      "name": "Exercise",
+      "color": "#6C72E8",
+      "createdAt": "2026-10-18"
+    },
+    {
       "id": "hmv9zwpimuz9o",
       "name": "Cardio activity",
       "color": "#E8C547",
@@ -41,12 +47,6 @@
       "name": "Paper Reading for Abeism project",
       "color": "#4AA3F0",
       "createdAt": "2026-10-16"
-    },
-    {
-      "id": "hmve5sbdl606k",
-      "name": "Exercise",
-      "color": "#6C72E8",
-      "createdAt": "2026-10-18"
     },
     {
       "id": "hmve6uji7ety3",
