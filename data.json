@@ -59,6 +59,12 @@
       "name": "Triceps",
       "color": "#8A94A6",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve689x84u3u",
+      "name": "Back",
+      "color": "#F0645A",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
