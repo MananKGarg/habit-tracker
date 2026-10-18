@@ -7,6 +7,12 @@
       "color": "#F0645A"
     },
     {
+      "id": "hmve6sxclzek5",
+      "name": "Phone usage < 30 mins",
+      "color": "#7BC96F",
+      "createdAt": "2026-10-19"
+    },
+    {
       "id": "hmv9zwpimuz9o",
       "name": "Cardio activity",
       "color": "#E8C547",
@@ -76,12 +82,6 @@
       "id": "hmve68ougryxp",
       "name": "Shouders",
       "color": "#E8C547",
-      "createdAt": "2026-10-19"
-    },
-    {
-      "id": "hmve6sxclzek5",
-      "name": "Phone usage < 30 mins",
-      "color": "#7BC96F",
       "createdAt": "2026-10-19"
     }
   ],
