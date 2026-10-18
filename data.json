@@ -39,13 +39,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmv9zwpimuz9o",
-      "name": "Cardio activity",
-      "color": "#E8C547",
-      "createdAt": "2026-10-16",
-      "section": "sec-default"
-    },
-    {
       "id": "hmv9zxpm356gz",
       "name": "10k steps",
       "color": "#7BC96F",
@@ -126,6 +119,13 @@
       "id": "hmv9zxlnuer09",
       "name": "Gym",
       "color": "#F59E42",
+      "createdAt": "2026-10-16",
+      "section": "smve793y24i0n"
+    },
+    {
+      "id": "hmv9zwpimuz9o",
+      "name": "Cardio activity",
+      "color": "#E8C547",
       "createdAt": "2026-10-16",
       "section": "smve793y24i0n"
     }
