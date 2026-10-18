@@ -74,6 +74,12 @@
 
   /* Toolbar */
   .toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  #addSection{flex:1 1 300px;display:flex;gap:8px;min-width:0}
+  #addSection .btn{flex:none}
+  @media (max-width:640px){#addSection .btn{padding:0 14px}}
+  #addSection input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);outline:none;transition:border-color .15s}
+  #addSection input:focus{border-color:var(--ink)}
+  #addSection input::placeholder{color:var(--muted)}
   #addForm{flex:1 1 320px;display:flex;gap:8px}
   #addForm input{flex:1;min-width:0;height:44px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);outline:none;transition:border-color .15s}
   #addForm input:focus{border-color:var(--ink)}
@@ -88,13 +94,46 @@
   @media (max-width:640px){.nav{flex:1 1 100%}#range{flex:1}}
   #range{padding:0 6px;font-weight:500;font-size:14px;white-space:nowrap;min-width:128px;text-align:center}
 
-  /* Grid */
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+  /* Sections */
+  #sections{display:flex;flex-direction:column;gap:18px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .15s,border-color .15s}
+  .card.drop-target{border-color:color-mix(in srgb,var(--ink) 45%,transparent)}
+  .sec-head{display:flex;align-items:center;gap:10px;padding:14px 14px 12px 10px;border-bottom:1px solid var(--line)}
+  .card.collapsed .sec-head{border-bottom:0}
+  .collapse{width:32px;height:32px;border:0;background:transparent;border-radius:9px;color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none;transition:transform .2s,background .15s}
+  .collapse:hover{background:var(--surface-2);color:var(--text)}
+  .card.collapsed .collapse{transform:rotate(-90deg)}
+  .sec-title{min-width:0;flex:1;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .sec-title h2{margin:0;font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:21px;letter-spacing:-.01em;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  .sec-title h2:hover{text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+  .sec-meta{font-size:13px;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+  .mini{display:inline-flex;gap:2px;width:64px;height:5px}
+  .mini i{flex:1;border-radius:9px;background:var(--surface-2)}
+  .sec-actions{display:flex;gap:2px;flex:none}
+  .sec-actions button{width:32px;height:32px;border:0;background:transparent;border-radius:9px;color:var(--muted);cursor:pointer;display:grid;place-items:center}
+  .sec-actions button:hover:not(:disabled){background:var(--surface-2);color:var(--text)}
+  .sec-actions button.danger:hover{color:var(--err);background:color-mix(in srgb,var(--err) 12%,transparent)}
+  .sec-actions button:disabled{opacity:.25}
+  .card.collapsed .scroll,.card.collapsed .sec-add{display:none}
+  .sec-add{display:flex;gap:8px;padding:10px 14px 14px;border-top:1px solid var(--line)}
+  .sec-add input{flex:1;min-width:0;height:38px;padding:0 12px;border-radius:10px;border:1px dashed var(--line);background:transparent;outline:none;font-size:14px}
+  .sec-add input:focus{border-style:solid;border-color:var(--ink);background:var(--bg)}
+  .sec-add input::placeholder{color:var(--muted)}
+  .sec-add button{height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:500;font-size:14px;cursor:pointer}
+  .sec-add button:hover{background:var(--ink);color:var(--ink-text);border-color:var(--ink)}
+  @media (max-width:640px){.sec-actions button{width:28px}.sec-title h2{font-size:19px}}
+
+  /* Grid (one per section, same column widths so sections line up) */
   .scroll{overflow-x:auto}
-  table{border-collapse:separate;border-spacing:0;width:100%}
+  table{--namew:312px;border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;min-width:calc(var(--namew) + 14 * 42px + 120px)}
+  @media (max-width:640px){table{--namew:178px}}
+  col.c-name{width:var(--namew)} col.c-streak{width:72px} col.c-del{width:48px}
   th,td{padding:9px 3px;text-align:center;border-bottom:1px solid var(--line)}
   tbody tr:last-child td{border-bottom:0}
-  /* Drag to reorder */
+  td.empty-row{text-align:left;padding:18px 0;color:var(--muted);font-size:14px}
+  td.empty-row span{position:sticky;left:18px;display:inline-block;max-width:calc(100vw - 80px);padding-right:18px}
+
+  /* Drag to reorder (within and across sections) */
   .hn{margin-left:-12px}
   .grip{width:20px;height:32px;flex:none;border:0;padding:0;background:transparent;color:var(--muted);display:grid;place-items:center;
         border-radius:6px;cursor:grab;touch-action:none;opacity:.45;transition:opacity .15s,background .15s;margin-right:-6px}
@@ -102,20 +141,19 @@
   tr:hover .grip,.grip:focus-visible{opacity:1}
   .grip:hover{background:var(--surface-2)}
   @media (hover:none){.grip{opacity:.7}}
-  tbody tr.shift{transition:transform .18s ease}
-  tbody tr.dragging{position:relative;z-index:5}
-  tbody tr.dragging td{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-        box-shadow:0 12px 18px -10px rgba(0,0,0,.22)}
-  tbody tr.dragging td.today{background:color-mix(in srgb,var(--surface-2) 70%,var(--surface))}
-  tbody tr.dragging .grip{opacity:1;cursor:grabbing;background:var(--surface-2)}
+  tbody tr.dragging{opacity:.35}
+  .ghost{position:fixed;z-index:70;pointer-events:none;display:flex;align-items:center;gap:10px;padding:10px 16px 10px 12px;border-radius:12px;
+         background:var(--surface);border:1px solid var(--line);box-shadow:0 14px 34px rgba(0,0,0,.22);font-weight:500;transform:translate(-14px,-50%) rotate(-1.5deg);white-space:nowrap}
+  .ghost .dot{cursor:grabbing}
+  .drop-line{position:fixed;z-index:65;height:3px;border-radius:3px;background:var(--ink);pointer-events:none;transform:translateY(-50%)}
+  .drop-line::before{content:"";position:absolute;left:-4px;top:50%;width:9px;height:9px;border-radius:50%;background:var(--ink);transform:translateY(-50%)}
   body.is-dragging,body.is-dragging *{cursor:grabbing !important;user-select:none}
   thead th{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:14px 3px 10px}
   thead .dnum{display:grid;place-items:center;width:28px;height:28px;margin:4px auto 0;border-radius:50%;font-size:14px;color:var(--text);text-transform:none;letter-spacing:0;font-weight:600}
   thead th.today .dnum{background:var(--ink);color:var(--ink-text)}
   td.today{background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
   .wk{border-left:1px dashed var(--line)}
-  .name{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left;padding-left:18px;padding-right:12px;min-width:200px;max-width:280px}
-  @media (max-width:640px){.name{min-width:170px;max-width:190px}}
+  .name{position:sticky;left:0;z-index:2;background:var(--surface);text-align:left;padding-left:18px;padding-right:12px}
   thead th.name{font-size:11px}
   .hn{display:flex;align-items:center;gap:12px;min-width:0}
   .dot{width:14px;height:14px;border-radius:50%;border:0;padding:0;background:var(--hc);flex:none;cursor:pointer;box-shadow:0 0 0 3px color-mix(in srgb,var(--hc) 22%,transparent);transition:transform .15s}
@@ -200,10 +238,10 @@
   <section class="stats" id="stats"></section>
 
   <div class="toolbar">
-    <form id="addForm">
-      <input id="habitName" placeholder="Add a habit — e.g. Read 20 minutes" maxlength="60" required autocomplete="off">
+    <form id="addSection">
+      <input id="sectionName" placeholder="New section — e.g. Fitness" maxlength="40" required autocomplete="off">
       <button class="btn primary">
-        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add
+        <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add section
       </button>
     </form>
     <div class="nav">
@@ -214,14 +252,12 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="scroll" id="gridWrap"><table id="grid"></table></div>
-    <div id="empty" class="empty" hidden>
-      <div class="big">Start with one small habit</div>
-      Add it above, then tap a square each day you do it.
-    </div>
+  <div id="sections"></div>
+  <div id="empty" class="card empty" hidden>
+    <div class="big">Create your first section</div>
+    Add one above (e.g. Fitness), then add habits inside it.
   </div>
-  <p class="tip">Drag ⋮⋮ to reorder · tap a habit's dot to change its colour · tap its name to rename · counts start from <span id="startLabel"></span></p>
+  <p class="tip">Drag ⋮⋮ to reorder or move habits between sections · tap a habit's dot to change its colour · tap its name to rename · counts start from <span id="startLabel"></span></p>
 </div>
 
 <div id="picker" class="picker" hidden></div>
@@ -257,6 +293,9 @@ const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 const isPending  = () => load(PENDING_KEY) === true;
 const setPending = v => store(PENDING_KEY, v);
 
+const DEFAULT_SECTION = 'sec-default';
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
 let cfg = load(CFG_KEY) || {};
 let state = normalize(load(CACHE_KEY));
 let sha = null, remoteReady = false, saving = false, dirty = false, saveTimer = null;
@@ -264,12 +303,26 @@ let endOffset = 0;     // days between today and the last column shown
 let popKey = null;     // cell to animate after a tick
 let pickerFor = null;  // habit id whose colour picker is open
 
+
 function normalize(s) {
   s = s && typeof s === 'object' ? s : {};
   const habits = Array.isArray(s.habits) ? s.habits : [];
+  const sections = Array.isArray(s.sections) ? s.sections.filter(x => x && x.id) : [];
   habits.forEach((h, i) => { if (!h.color) h.color = PALETTE[i % PALETTE.length]; });
-  return { habits, checks: s.checks && typeof s.checks === 'object' ? s.checks : {} };
+  // Habits from before sections existed (or whose section was removed) go into a starter section
+  const ids = new Set(sections.map(x => x.id));
+  const orphans = habits.filter(h => !ids.has(h.section));
+  if (orphans.length) {
+    let home = sections[0];
+    if (!home) { home = { id: DEFAULT_SECTION, name: 'My habits' }; sections.push(home); }
+    orphans.forEach(h => h.section = home.id);
+  }
+  return { sections, habits, checks: s.checks && typeof s.checks === 'object' ? s.checks : {} };
 }
+
+// Collapsed sections are remembered per device
+let collapsed = new Set(load('habit-collapsed') || []);
+const saveCollapsed = () => store('habit-collapsed', [...collapsed]);
 
 // ---------- theme ----------
 function applyTheme(t) {
@@ -478,6 +531,16 @@ function renderStats(days) {
     </div>`;
 }
 
+const ICON = {
+  chev: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+  up: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  down: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>',
+  edit: '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>'
+};
+
+let sharedScroll = null;   // horizontal scroll shared by all section grids
+let scrolledFor = null;    // window offset the scroll position was set for
+
 function render() {
   const end = addDays(today(), -endOffset);
   const days = Array.from({ length: 14 }, (_, i) => addDays(end, i - 13));
@@ -485,62 +548,101 @@ function render() {
   const short = d => d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
 
   $('startLabel').textContent = startLabel();
-  $('todayLabel').textContent =today().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
+  $('todayLabel').textContent = today().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' });
   $('range').textContent = `${short(days[0])} – ${short(days[13])}`;
   $('next').disabled = endOffset <= -maxAhead();
   $('todayBtn').disabled = endOffset === 0;
   renderStats(days);
 
-  const empty = state.habits.length === 0;
-  $('empty').hidden = !empty;
-  $('gridWrap').hidden = empty;
-  if (empty) return;
+  // Keep anything typed into a section's "add habit" box across re-renders
+  const drafts = {};
+  document.querySelectorAll('.sec-add input').forEach(i => { if (i.value) drafts[i.dataset.sec] = i.value; });
+  const focusedSec = document.activeElement?.closest?.('.sec-add')?.dataset.sec;
+
+  $('empty').hidden = state.sections.length > 0;
 
   const colCls = (d, i) => [ymd(d) === t ? 'today' : '', i > 0 && d.getDay() === 1 ? 'wk' : ''].join(' ').trim();
-
-  let html = '<thead><tr><th class="name">Habit</th>';
+  let head = '<colgroup><col class="c-name">' + '<col>'.repeat(14) + '<col class="c-streak"><col class="c-del"></colgroup><thead><tr><th class="name">Habit</th>';
   days.forEach((d, i) => {
-    html += `<th class="${colCls(d, i)}">${d.toLocaleDateString(undefined, { weekday: 'short' })}<span class="dnum">${d.getDate()}</span></th>`;
+    head += `<th class="${colCls(d, i)}">${d.toLocaleDateString(undefined, { weekday: 'short' })}<span class="dnum">${d.getDate()}</span></th>`;
   });
-  html += '<th>Streak</th><th></th></tr></thead><tbody>';
+  head += '<th>Streak</th><th></th></tr></thead>';
 
-  for (const h of state.habits) {
+  const rowHtml = h => {
     const c = state.checks[h.id] || {};
     const { last14, total } = counts(h.id);
     const s = streak(h.id);
-    html += `<tr data-row="${h.id}" style="--hc:${h.color};--hc-ink:${inkFor(h.color)}">
+    let r = `<tr data-row="${h.id}" style="--hc:${h.color};--hc-ink:${inkFor(h.color)}">
       <td class="name"><div class="hn">
-        <button class="grip" data-grip="${h.id}" title="Drag to reorder" aria-label="Reorder ${esc(h.name)} (drag, or use arrow keys)">${GRIP}</button>
+        <button class="grip" data-grip="${h.id}" title="Drag to reorder or move to another section" aria-label="Reorder ${esc(h.name)} (drag, or use arrow keys)">${GRIP}</button>
         <button class="dot" data-color="${h.id}" aria-label="Change colour of ${esc(h.name)}"></button>
         <div class="hmeta"><span class="htitle" data-rename="${h.id}" title="Click to rename">${esc(h.name)}</span>
         <span class="hsub"><span class="chip" title="Days done in the last 14 days (ending today)"><b>${last14}</b>/14 last 14 days</span><span class="chip" title="All days done since ${startLabel()}"><b>${total}</b>/${trackedDays()} since ${startLabel()}</span></span></div>
       </div></td>`;
     days.forEach((d, i) => {
       const key = ymd(d), done = !!c[key];
-      if (key > t) { // future day: visible but not tickable
-        html += `<td class="${colCls(d, i)}"><span class="cell future" aria-hidden="true"></span></td>`;
-        return;
-      }
+      if (key > t) { r += `<td class="${colCls(d, i)}"><span class="cell future" aria-hidden="true"></span></td>`; return; }
       const pop = popKey === `${h.id}|${key}` ? ' pop' : '';
-      html += `<td class="${colCls(d, i)}"><button class="cell${done ? ' done' : ''}${pop}" data-id="${h.id}" data-day="${key}" aria-pressed="${done}" aria-label="${esc(h.name)} on ${key}">${done ? CHECK : ''}</button></td>`;
+      r += `<td class="${colCls(d, i)}"><button class="cell${done ? ' done' : ''}${pop}" data-id="${h.id}" data-day="${key}" aria-pressed="${done}" aria-label="${esc(h.name)} on ${key}">${done ? CHECK : ''}</button></td>`;
     });
-    html += `<td class="streak"><span class="pill${s ? '' : ' zero'}">${s ? '🔥 ' : ''}${s}</span></td>
+    return r + `<td class="streak"><span class="pill${s ? '' : ' zero'}">${s ? '🔥 ' : ''}${s}</span></td>
       <td><button class="del" data-del="${h.id}" title="Delete habit" aria-label="Delete ${esc(h.name)}">${TRASH}</button></td></tr>`;
+  };
+
+  const n = state.sections.length;
+  $('sections').innerHTML = state.sections.map((sec, si) => {
+    const hs = state.habits.filter(h => h.section === sec.id);
+    const done = hs.filter(h => state.checks[h.id]?.[t]).length;
+    const mini = hs.map(h => `<i style="${state.checks[h.id]?.[t] ? `background:${h.color}` : ''}"></i>`).join('');
+    const isCol = collapsed.has(sec.id);
+    return `<section class="card${isCol ? ' collapsed' : ''}" data-sec="${sec.id}">
+      <div class="sec-head">
+        <button class="collapse" data-collapse="${sec.id}" aria-expanded="${!isCol}" aria-label="${isCol ? 'Expand' : 'Collapse'} ${esc(sec.name)}">${ICON.chev}</button>
+        <div class="sec-title">
+          <h2 data-rename-sec="${sec.id}" title="Click to rename">${esc(sec.name)}</h2>
+          <span class="sec-meta">${hs.length ? `${done}/${hs.length} today <span class="mini">${mini}</span>` : 'No habits yet'}</span>
+        </div>
+        <div class="sec-actions">
+          <button data-sec-up="${sec.id}" ${si === 0 ? 'disabled' : ''} title="Move section up" aria-label="Move ${esc(sec.name)} up">${ICON.up}</button>
+          <button data-sec-down="${sec.id}" ${si === n - 1 ? 'disabled' : ''} title="Move section down" aria-label="Move ${esc(sec.name)} down">${ICON.down}</button>
+          <button data-rename-sec="${sec.id}" title="Rename section" aria-label="Rename ${esc(sec.name)}">${ICON.edit}</button>
+          <button class="danger" data-del-sec="${sec.id}" title="Delete section" aria-label="Delete ${esc(sec.name)}">${TRASH}</button>
+        </div>
+      </div>
+      <div class="scroll"><table>${head}<tbody>${hs.length ? hs.map(rowHtml).join('')
+        : `<tr><td class="empty-row" colspan="17"><span>Nothing here yet — add a habit below, or drag one in.</span></td></tr>`}</tbody></table></div>
+      <form class="sec-add" data-sec="${sec.id}">
+        <input data-sec="${sec.id}" placeholder="Add a habit to ${esc(sec.name)}…" maxlength="60" required autocomplete="off" value="${esc(drafts[sec.id] || '')}">
+        <button>Add</button>
+      </form>
+    </section>`;
+  }).join('');
+
+  if (focusedSec) document.querySelector(`.sec-add input[data-sec="${focusedSec}"]`)?.focus();
+
+  // Horizontal scroll: start at the most recent days, and keep all sections in step
+  const wraps = [...document.querySelectorAll('#sections .scroll')];
+  if (wraps.length) {
+    if (scrolledFor !== endOffset || sharedScroll === null) {
+      const w = wraps.find(x => x.offsetParent) || wraps[0];
+      const lastDay = w.querySelectorAll('thead th')[14]; // 1 name column + 14 day columns
+      sharedScroll = lastDay ? Math.max(0, lastDay.offsetLeft + lastDay.offsetWidth - w.clientWidth + 8) : 0;
+      scrolledFor = endOffset;
+    }
+    wraps.forEach(w => {
+      w.scrollLeft = sharedScroll;
+      w.addEventListener('scroll', () => {
+        if (syncing) return;
+        sharedScroll = w.scrollLeft;
+        syncing = true;
+        wraps.forEach(o => { if (o !== w) o.scrollLeft = sharedScroll; });
+        requestAnimationFrame(() => syncing = false);
+      }, { passive: true });
+    });
   }
-  const wrap = $('gridWrap'), keepScroll = wrap.scrollLeft, first = !wrap.dataset.ready;
-  $('grid').innerHTML = html + '</tbody>';
-  // On narrow screens, start scrolled to the most recent days
-  if (first || (popKey === null && wrap.dataset.offset !== String(endOffset))) {
-    const ths = $('grid').querySelectorAll('thead th');
-    const lastDay = ths[14]; // 1 name column + 14 day columns
-    wrap.scrollLeft = lastDay ? lastDay.offsetLeft + lastDay.offsetWidth - wrap.clientWidth + 8 : 0;
-  } else {
-    wrap.scrollLeft = keepScroll;
-  }
-  wrap.dataset.ready = '1';
-  wrap.dataset.offset = endOffset;
   popKey = null;
 }
+let syncing = false;
 
 // ---------- colour picker ----------
 function openPicker(id, anchor) {
@@ -571,30 +673,87 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(
 window.addEventListener('resize', closePicker);
 
 // ---------- events ----------
-$('addForm').addEventListener('submit', e => {
+const findSec = id => state.sections.find(x => x.id === id);
+
+$('addSection').addEventListener('submit', e => {
   e.preventDefault();
-  const name = $('habitName').value.trim();
+  const name = $('sectionName').value.trim();
   if (!name) return;
-  const id = 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  state.habits.push({ id, name, color: nextColor(), createdAt: ymd(today()) });
-  $('habitName').value = '';
+  const id = uid('s');
+  state.sections.push({ id, name: name.slice(0, 40) });
+  $('sectionName').value = '';
   commit();
+  document.querySelector(`.sec-add input[data-sec="${id}"]`)?.focus();
 });
 
-$('grid').addEventListener('click', e => {
-  const dot = e.target.closest('[data-color]');
+// Add a habit inside a section
+$('sections').addEventListener('submit', e => {
+  const form = e.target.closest('.sec-add');
+  if (!form) return;
+  e.preventDefault();
+  const input = form.querySelector('input');
+  const name = input.value.trim();
+  if (!name) return;
+  state.habits.push({ id: uid('h'), name, color: nextColor(), section: form.dataset.sec, createdAt: ymd(today()) });
+  input.value = '';
+  commit();
+  document.querySelector(`.sec-add input[data-sec="${form.dataset.sec}"]`)?.focus();
+});
+
+$('sections').addEventListener('click', e => {
+  const t = e.target;
+  // --- section controls ---
+  const col = t.closest('[data-collapse]');
+  if (col) {
+    const id = col.dataset.collapse;
+    collapsed.has(id) ? collapsed.delete(id) : collapsed.add(id);
+    saveCollapsed();
+    return render();
+  }
+  const rs = t.closest('[data-rename-sec]');
+  if (rs) {
+    const sec = findSec(rs.dataset.renameSec);
+    const name = sec && prompt('Rename section', sec.name);
+    if (name && name.trim()) { sec.name = name.trim().slice(0, 40); commit(); }
+    return;
+  }
+  const up = t.closest('[data-sec-up]'), down = t.closest('[data-sec-down]');
+  if (up || down) {
+    const i = state.sections.findIndex(x => x.id === (up || down).dataset[up ? 'secUp' : 'secDown']);
+    const j = i + (up ? -1 : 1);
+    if (i < 0 || j < 0 || j >= state.sections.length) return;
+    [state.sections[i], state.sections[j]] = [state.sections[j], state.sections[i]];
+    return commit();
+  }
+  const ds = t.closest('[data-del-sec]');
+  if (ds) {
+    const sec = findSec(ds.dataset.delSec);
+    if (!sec) return;
+    const hs = state.habits.filter(h => h.section === sec.id);
+    const msg = hs.length
+      ? `Delete the section "${sec.name}" AND its ${hs.length} habit${hs.length > 1 ? 's' : ''} with all their history?\n\nTip: drag habits to another section first to keep them.`
+      : `Delete the empty section "${sec.name}"?`;
+    if (!confirm(msg)) return;
+    hs.forEach(h => delete state.checks[h.id]);
+    state.habits = state.habits.filter(h => h.section !== sec.id);
+    state.sections = state.sections.filter(x => x !== sec);
+    collapsed.delete(sec.id); saveCollapsed();
+    return commit();
+  }
+  // --- habit controls ---
+  const dot = t.closest('[data-color]');
   if (dot) {
     if (pickerFor === dot.dataset.color) closePicker(); else openPicker(dot.dataset.color, dot);
     return;
   }
-  const cell = e.target.closest('[data-day]');
+  const cell = t.closest('[data-day]');
   if (cell) {
     const { id, day } = cell.dataset;
     const c = (state.checks[id] ||= {});
     if (c[day]) delete c[day]; else { c[day] = true; popKey = `${id}|${day}`; }
     return commit();
   }
-  const del = e.target.closest('[data-del]');
+  const del = t.closest('[data-del]');
   if (del) {
     const h = state.habits.find(x => x.id === del.dataset.del);
     if (h && confirm(`Delete "${h.name}" and all its history?`)) {
@@ -604,7 +763,7 @@ $('grid').addEventListener('click', e => {
     }
     return;
   }
-  const ren = e.target.closest('[data-rename]');
+  const ren = t.closest('[data-rename]');
   if (ren) {
     const h = state.habits.find(x => x.id === ren.dataset.rename);
     const name = h && prompt('Rename habit', h.name);
@@ -612,72 +771,144 @@ $('grid').addEventListener('click', e => {
   }
 });
 
-// ---------- drag to reorder ----------
-// Rows are moved visually with transforms during the drag, and the real order is saved on release.
+// ---------- drag to reorder / move between sections ----------
+// A floating label follows the pointer and a line shows where the habit will land.
 let drag = null;
 
-function moveHabit(from, to) {
-  if (from === to || to < 0 || to >= state.habits.length) return false;
-  const [h] = state.habits.splice(from, 1);
-  state.habits.splice(to, 0, h);
-  return true;
+// Put habit `id` into section `secId` at position `index` within that section
+function moveTo(id, secId, index) {
+  const before = state.habits.map(h => h.id + ':' + h.section).join();
+  const h = state.habits.find(x => x.id === id);
+  if (!h) return false;
+  state.habits = state.habits.filter(x => x !== h);
+  h.section = secId;
+  const list = state.habits.filter(x => x.section === secId);
+  if (index < list.length) state.habits.splice(state.habits.indexOf(list[index]), 0, h);
+  else if (list.length) state.habits.splice(state.habits.indexOf(list[list.length - 1]) + 1, 0, h);
+  else state.habits.push(h);
+  return state.habits.map(x => x.id + ':' + x.section).join() !== before;
 }
 
-$('grid').addEventListener('pointerdown', e => {
+function startDrag() {
+  const h = state.habits.find(x => x.id === drag.id);
+  drag.started = true;
+  drag.row.classList.add('dragging');
+  document.body.classList.add('is-dragging');
+  closePicker();
+  const ghost = document.createElement('div');
+  ghost.className = 'ghost';
+  ghost.style.setProperty('--hc', h.color);
+  ghost.innerHTML = `<span class="dot"></span>${esc(h.name)}`;
+  const line = document.createElement('div');
+  line.className = 'drop-line';
+  document.body.append(ghost, line);
+  drag.ghost = ghost; drag.line = line;
+}
+
+function dropTarget(x, y) {
+  const cards = [...document.querySelectorAll('#sections .card')];
+  if (!cards.length) return null;
+  // Section under the pointer, or the nearest one
+  let card = cards.find(c => { const r = c.getBoundingClientRect(); return y >= r.top && y <= r.bottom; });
+  if (!card) card = cards.reduce((best, c) => {
+    const r = c.getBoundingClientRect(), d = Math.min(Math.abs(y - r.top), Math.abs(y - r.bottom));
+    return !best || d < best.d ? { c, d } : best;
+  }, null).c;
+  const secId = card.dataset.sec;
+  const cr = card.getBoundingClientRect();
+  const lineX = cr.left + 14, lineW = cr.width - 28;
+  if (card.classList.contains('collapsed')) {
+    const n = state.habits.filter(h => h.section === secId && h.id !== drag.id).length;
+    const r = card.querySelector('.sec-head').getBoundingClientRect();
+    return { card, secId, index: n, lineY: r.bottom - 2, lineX, lineW };
+  }
+  const rows = [...card.querySelectorAll('tbody tr[data-row]')].filter(r => r.dataset.row !== drag.id);
+  let index = 0;
+  rows.forEach(r => { const b = r.getBoundingClientRect(); if (b.top + b.height / 2 < y) index++; });
+  let lineY;
+  if (!rows.length) { const b = card.querySelector('tbody').getBoundingClientRect(); lineY = b.top + b.height / 2; }
+  else if (index === 0) lineY = rows[0].getBoundingClientRect().top;
+  else lineY = rows[index - 1].getBoundingClientRect().bottom;
+  return { card, secId, index, lineY, lineX, lineW };
+}
+
+function updateDrag(x, y) {
+  drag.ghost.style.left = x + 'px';
+  drag.ghost.style.top = y + 'px';
+  const tgt = dropTarget(x, y);
+  document.querySelectorAll('.card.drop-target').forEach(c => { if (c !== tgt?.card) c.classList.remove('drop-target'); });
+  drag.target = tgt;
+  if (!tgt) { drag.line.hidden = true; return; }
+  tgt.card.classList.add('drop-target');
+  drag.line.hidden = false;
+  Object.assign(drag.line.style, { left: tgt.lineX + 'px', top: tgt.lineY + 'px', width: tgt.lineW + 'px' });
+}
+
+// Scroll the page while dragging near the top/bottom edge
+function autoScroll() {
+  if (!drag || !drag.started) return;
+  const edge = 70, y = drag.y;
+  let v = 0;
+  if (y < edge) v = -Math.ceil((edge - y) / 5);
+  else if (y > innerHeight - edge) v = Math.ceil((y - (innerHeight - edge)) / 5);
+  if (v) { window.scrollBy(0, v); updateDrag(drag.x, drag.y); }
+  drag.raf = requestAnimationFrame(autoScroll);
+}
+
+$('sections').addEventListener('pointerdown', e => {
   const g = e.target.closest('[data-grip]');
   if (!g || (e.pointerType === 'mouse' && e.button !== 0)) return;
   e.preventDefault();
-  closePicker();
-  const rows = [...$('grid').tBodies[0].rows];
-  const row = g.closest('tr');
-  const from = rows.indexOf(row);
-  const boxes = rows.map(r => r.getBoundingClientRect());
-  drag = { rows, row, from, to: from, boxes, startY: e.clientY, h: boxes[from].height, id: g.dataset.grip };
-  row.classList.add('dragging');
-  rows.forEach(r => { if (r !== row) r.classList.add('shift'); });
-  document.body.classList.add('is-dragging');
+  drag = { id: g.dataset.grip, row: g.closest('tr'), sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, started: false };
 });
 
 window.addEventListener('pointermove', e => {
   if (!drag) return;
-  const { rows, row, from, boxes, h } = drag;
-  const top = boxes[0].top, bottom = boxes[boxes.length - 1].bottom;
-  // Keep the dragged row inside the table
-  const dy = Math.max(top - boxes[from].top, Math.min(e.clientY - drag.startY, bottom - boxes[from].bottom));
-  row.style.transform = `translateY(${dy}px)`;
-  const center = boxes[from].top + h / 2 + dy;
-  let to = 0;
-  boxes.forEach((b, k) => { if (k !== from && b.top + b.height / 2 < center) to++; });
-  drag.to = to;
-  rows.forEach((r, k) => {
-    if (k === from) return;
-    let shift = 0;
-    if (from < to && k > from && k <= to) shift = -h;
-    if (to < from && k >= to && k < from) shift = h;
-    r.style.transform = shift ? `translateY(${shift}px)` : '';
-  });
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (!drag.started) {
+    if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 4) return;
+    startDrag();
+    drag.raf = requestAnimationFrame(autoScroll);
+  }
+  updateDrag(e.clientX, e.clientY);
 });
 
-function endDrag() {
+function endDrag(e) {
   if (!drag) return;
-  const { rows, from, to, id } = drag;
+  const d = drag;
   drag = null;
+  cancelAnimationFrame(d.raf);
+  if (!d.started) return;
+  d.ghost.remove(); d.line.remove();
+  d.row.classList.remove('dragging');
   document.body.classList.remove('is-dragging');
-  rows.forEach(r => { r.style.transform = ''; r.classList.remove('shift', 'dragging'); });
-  if (moveHabit(from, to)) commit();
+  document.querySelectorAll('.card.drop-target').forEach(c => c.classList.remove('drop-target'));
+  if (e.type === 'pointerup' && d.target && moveTo(d.id, d.target.secId, d.target.index)) {
+    collapsed.delete(d.target.secId); saveCollapsed(); // open the section it landed in
+    commit();
+  }
 }
 window.addEventListener('pointerup', endDrag);
 window.addEventListener('pointercancel', endDrag);
 
-// Keyboard: focus the handle, then ArrowUp / ArrowDown
-$('grid').addEventListener('keydown', e => {
+// Keyboard: focus the handle, then ArrowUp / ArrowDown (crosses into neighbouring sections at the edges)
+$('sections').addEventListener('keydown', e => {
   const g = e.target.closest('[data-grip]');
   if (!g || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
   e.preventDefault();
-  const i = state.habits.findIndex(h => h.id === g.dataset.grip);
-  if (moveHabit(i, i + (e.key === 'ArrowUp' ? -1 : 1))) {
+  const id = g.dataset.grip, h = state.habits.find(x => x.id === id);
+  const si = state.sections.findIndex(s => s.id === h.section);
+  const list = state.habits.filter(x => x.section === h.section);
+  const i = list.indexOf(h), upKey = e.key === 'ArrowUp';
+  let moved = false;
+  if (upKey && i > 0) moved = moveTo(id, h.section, i - 1);
+  else if (!upKey && i < list.length - 1) moved = moveTo(id, h.section, i + 1);
+  else if (upKey && si > 0) { const s = state.sections[si - 1]; moved = moveTo(id, s.id, state.habits.filter(x => x.section === s.id).length); }
+  else if (!upKey && si < state.sections.length - 1) moved = moveTo(id, state.sections[si + 1].id, 0);
+  if (moved) {
+    collapsed.delete(h.section); saveCollapsed();
     commit();
-    $('grid').querySelector(`[data-grip="${g.dataset.grip}"]`)?.focus();
+    document.querySelector(`[data-grip="${id}"]`)?.focus();
   }
 });
 
