@@ -65,6 +65,12 @@
       "name": "Back",
       "color": "#F0645A",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve68bkbhvj2",
+      "name": "Chest",
+      "color": "#F59E42",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
