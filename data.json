@@ -47,6 +47,12 @@
       "name": "Legs",
       "color": "#A66BE8",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve685vc5rd5",
+      "name": "Biceps",
+      "color": "#EC6BB0",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
