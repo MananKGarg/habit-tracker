@@ -1,106 +1,133 @@
 {
+  "sections": [
+    {
+      "id": "sec-default",
+      "name": "My habits"
+    },
+    {
+      "id": "smve793y24i0n",
+      "name": "Fitness"
+    }
+  ],
   "habits": [
     {
       "id": "hmve6sxclzek5",
       "name": "Phone usage < 30 mins",
       "color": "#7BC96F",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmv9zzzb87hlz",
       "name": "Paper Reading for Ableism project",
       "color": "#4AA3F0",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "section": "sec-default"
     },
     {
       "id": "hmv9z6traubln",
       "name": "Wake up at 6AM",
       "createdAt": "2026-10-16",
-      "color": "#F0645A"
+      "color": "#F0645A",
+      "section": "sec-default"
     },
     {
       "id": "hmve5sbdl606k",
       "name": "Exercise",
       "color": "#6C72E8",
-      "createdAt": "2026-10-18"
+      "createdAt": "2026-10-18",
+      "section": "sec-default"
     },
     {
       "id": "hmv9zwpimuz9o",
       "name": "Cardio activity",
       "color": "#E8C547",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "section": "sec-default"
     },
     {
       "id": "hmv9zxpm356gz",
       "name": "10k steps",
       "color": "#7BC96F",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "section": "sec-default"
     },
     {
       "id": "hmve6uu7r7i2r",
       "name": "Job switch preparation",
       "color": "#4AA3F0",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmv9zxzcvrkqd",
       "name": "Healthy eating",
       "color": "#2BB3A3",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "section": "sec-default"
     },
     {
       "id": "hmve6vxdbyx9y",
       "name": "Protein shake 1 scoop",
       "color": "#6C72E8",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmve6uji7ety3",
       "name": "External reading",
       "color": "#2BB3A3",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmv9zxlnuer09",
       "name": "Gym",
       "color": "#F59E42",
-      "createdAt": "2026-10-16"
+      "createdAt": "2026-10-16",
+      "section": "sec-default"
     },
     {
       "id": "hmve67z8g1uj8",
       "name": "Legs",
       "color": "#A66BE8",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmve685vc5rd5",
       "name": "Biceps",
       "color": "#EC6BB0",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmve6885wl20r",
       "name": "Triceps",
       "color": "#8A94A6",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmve689x84u3u",
       "name": "Back",
       "color": "#F0645A",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmve68bkbhvj2",
       "name": "Chest",
       "color": "#F59E42",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     },
     {
       "id": "hmve68ougryxp",
       "name": "Shouders",
       "color": "#E8C547",
-      "createdAt": "2026-10-19"
+      "createdAt": "2026-10-19",
+      "section": "sec-default"
     }
   ],
   "checks": {
