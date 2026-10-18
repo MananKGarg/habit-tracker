@@ -136,6 +136,13 @@
       "color": "#E8C547",
       "createdAt": "2026-10-19",
       "section": "smve7b5hwz5z5"
+    },
+    {
+      "id": "hmve7cvj64tee",
+      "name": "Computer Networks",
+      "color": "#A66BE8",
+      "section": "smve7cp3ffuyk",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
