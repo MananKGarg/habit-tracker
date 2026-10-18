@@ -19,17 +19,17 @@
   ],
   "habits": [
     {
-      "id": "hmve5sbdl606k",
-      "name": "Exercise",
-      "color": "#6C72E8",
-      "createdAt": "2026-10-18",
-      "section": "sec-default"
-    },
-    {
       "id": "hmv9zzzb87hlz",
       "name": "Paper Reading for Ableism project",
       "color": "#4AA3F0",
       "createdAt": "2026-10-16",
+      "section": "sec-default"
+    },
+    {
+      "id": "hmve5sbdl606k",
+      "name": "Exercise",
+      "color": "#6C72E8",
+      "createdAt": "2026-10-18",
       "section": "sec-default"
     },
     {
