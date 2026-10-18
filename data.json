@@ -95,6 +95,12 @@
       "name": "Shouders",
       "color": "#E8C547",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve6vxdbyx9y",
+      "name": "Protein shake 1 scoop",
+      "color": "#6C72E8",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
