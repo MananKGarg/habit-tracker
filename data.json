@@ -43,6 +43,12 @@
       "createdAt": "2026-10-18"
     },
     {
+      "id": "hmve6uji7ety3",
+      "name": "External reading",
+      "color": "#2BB3A3",
+      "createdAt": "2026-10-19"
+    },
+    {
       "id": "hmv9zxlnuer09",
       "name": "Gym",
       "color": "#F59E42",
@@ -82,12 +88,6 @@
       "id": "hmve68ougryxp",
       "name": "Shouders",
       "color": "#E8C547",
-      "createdAt": "2026-10-19"
-    },
-    {
-      "id": "hmve6uji7ety3",
-      "name": "External reading",
-      "color": "#2BB3A3",
       "createdAt": "2026-10-19"
     },
     {
