@@ -164,6 +164,13 @@
       "color": "#F0645A",
       "section": "smve7cp3ffuyk",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve7gpi5hied",
+      "name": "Deep Work for 4 Hours",
+      "color": "#F59E42",
+      "section": "sec-default",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
