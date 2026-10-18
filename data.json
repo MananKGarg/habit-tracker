@@ -53,6 +53,12 @@
       "name": "Biceps",
       "color": "#EC6BB0",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmve6885wl20r",
+      "name": "Triceps",
+      "color": "#8A94A6",
+      "createdAt": "2026-10-19"
     }
   ],
   "checks": {
