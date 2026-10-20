@@ -58,13 +58,6 @@
       "section": "sec-default"
     },
     {
-      "id": "hmv9zxzcvrkqd",
-      "name": "Healthy eating",
-      "color": "#2BB3A3",
-      "createdAt": "2026-10-16",
-      "section": "sec-default"
-    },
-    {
       "id": "hmv9zwpimuz9o",
       "name": "Cardio activity",
       "color": "#E8C547",
@@ -175,6 +168,13 @@
       "color": "#F59E42",
       "section": "sec-default",
       "createdAt": "2026-10-19"
+    },
+    {
+      "id": "hmv9zxzcvrkqd",
+      "name": "Healthy eating",
+      "color": "#2BB3A3",
+      "createdAt": "2026-10-16",
+      "section": "sec-default"
     },
     {
       "id": "hmve7khh2i34v",
