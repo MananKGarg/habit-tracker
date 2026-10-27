@@ -69,13 +69,6 @@
       "section": "smve793y24i0n"
     },
     {
-      "id": "hmve6vxdbyx9y",
-      "name": "Protein shake 1 scoop",
-      "color": "#6C72E8",
-      "createdAt": "2026-10-19",
-      "section": "smve793y24i0n"
-    },
-    {
       "id": "hmve67z8g1uj8",
       "name": "Legs",
       "color": "#A66BE8",
@@ -248,6 +241,13 @@
       "name": "10k steps",
       "color": "#7BC96F",
       "createdAt": "2026-10-16",
+      "section": "smvqcdj87zj2p"
+    },
+    {
+      "id": "hmve6vxdbyx9y",
+      "name": "Protein shake 1 scoop",
+      "color": "#6C72E8",
+      "createdAt": "2026-10-19",
       "section": "smvqcdj87zj2p"
     }
   ],
