@@ -228,6 +228,13 @@
       "color": "#EC6BB0",
       "section": "smvqcdj87zj2p",
       "createdAt": "2026-10-27"
+    },
+    {
+      "id": "hmvqcum214tol",
+      "name": "Phone usage -> 9-10 PM",
+      "color": "#8A94A6",
+      "section": "smvqcdj87zj2p",
+      "createdAt": "2026-10-27"
     }
   ],
   "checks": {
