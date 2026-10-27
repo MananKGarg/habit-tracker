@@ -76,13 +76,6 @@
       "section": "smve793y24i0n"
     },
     {
-      "id": "hmv9zxpm356gz",
-      "name": "10k steps",
-      "color": "#7BC96F",
-      "createdAt": "2026-10-16",
-      "section": "smve793y24i0n"
-    },
-    {
       "id": "hmve67z8g1uj8",
       "name": "Legs",
       "color": "#A66BE8",
@@ -256,6 +249,13 @@
       "color": "#E8C547",
       "section": "smvqcdj87zj2p",
       "createdAt": "2026-10-27"
+    },
+    {
+      "id": "hmv9zxpm356gz",
+      "name": "10k steps",
+      "color": "#7BC96F",
+      "createdAt": "2026-10-16",
+      "section": "smvqcdj87zj2p"
     }
   ],
   "checks": {
