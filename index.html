@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Habits</title>
+<!-- Home Screen app (iPhone / Android) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Habits">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#F6F4EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111113" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
 <script>
   // Apply saved theme before paint (avoids a flash)
   (() => { try { const t = localStorage.getItem('habit-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {} })();
@@ -38,7 +48,13 @@
   button,input{font:inherit;color:inherit}
   button:disabled{opacity:.35;cursor:default}
   svg.i{width:16px;height:16px;flex:none}
-  .wrap{max-width:1060px;margin:0 auto;padding:28px 16px 64px}
+  .wrap{max-width:1060px;margin:0 auto;padding:28px 16px 64px;
+        padding-top:max(28px, calc(env(safe-area-inset-top) + 12px));
+        padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right));
+        padding-bottom:max(64px, calc(env(safe-area-inset-bottom) + 32px))}
+  /* Phone polish: no double-tap zoom on buttons, no zoom-in when typing (iOS zooms inputs under 16px) */
+  button,.cell{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  @media (max-width:640px){input{font-size:16px !important}}
 
   /* Header */
   header{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
